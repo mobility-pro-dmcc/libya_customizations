@@ -1,0 +1,128 @@
+{
+ "actions": [],
+ "autoname": "ACC-ACV-.YYYY.-.#####",
+ "creation": "2026-02-15 22:24:29.403470",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_v7oa",
+  "posting_date",
+  "remarks",
+  "column_break_tclk",
+  "closing_account",
+  "closing_account_currency",
+  "company",
+  "fiscal_year",
+  "section_break_oyot",
+  "accounts_to_close",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "section_break_v7oa",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "posting_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Posting Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_tclk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "closing_account",
+   "fieldtype": "Link",
+   "label": "Closing Account",
+   "link_filters": "[[\"Account\",\"is_group\",\"=\",0],[\"Account\",\"root_type\",\"=\",\"Equity\"]]",
+   "options": "Account",
+   "reqd": 1
+  },
+  {
+   "fieldname": "remarks",
+   "fieldtype": "Small Text",
+   "label": "Remarks",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_oyot",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "accounts_to_close",
+   "fieldtype": "Table",
+   "label": "Accounts To Close",
+   "options": "Account Closing Detail",
+   "reqd": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "print_hide": 1,
+   "remember_last_selected_value": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "fiscal_year",
+   "fieldtype": "Link",
+   "label": "Fiscal Year",
+   "options": "Fiscal Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Account Closing Voucher",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
+  },
+  {
+   "fetch_from": "closing_account.account_currency",
+   "fieldname": "closing_account_currency",
+   "fieldtype": "Data",
+   "label": "Closing Account Currency",
+   "link_filters": "[[\"Account\",\"is_group\",\"=\",0],[\"Account\",\"root_type\",\"=\",\"Equity\"]]",
+   "options": "Account",
+   "read_only": 1,
+   "reqd": 1
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-02-16 11:22:12.170991",
+ "modified_by": "Administrator",
+ "module": "Libya Customizations",
+ "name": "Account Closing Voucher",
+ "naming_rule": "Expression (old style)",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

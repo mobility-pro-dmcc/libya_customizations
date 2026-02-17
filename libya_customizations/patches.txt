@@ -7,3 +7,4 @@
 libya_customizations.patches.update_item_price_before_change_methodology
 libya_customizations.patches.create_roles
 libya_customizations.patches.create_lc_workflow
+libya_customizations.patches.setup_account_closing_entry
