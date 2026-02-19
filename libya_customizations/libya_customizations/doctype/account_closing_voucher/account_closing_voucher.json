@@ -98,8 +98,14 @@
  "grid_page_length": 50,
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
- "links": [],
- "modified": "2026-02-16 11:22:12.170991",
+ "links": [
+  {
+   "link_doctype": "Journal Entry",
+   "link_fieldname": "reference_name",
+   "table_fieldname": "accounts"
+  }
+ ],
+ "modified": "2026-02-18 10:31:40.551472",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Account Closing Voucher",
@@ -115,6 +121,21 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "submit": 1,
+   "write": 1
+  },
+  {
+   "amend": 1,
+   "cancel": 1,
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
    "share": 1,
    "submit": 1,
    "write": 1

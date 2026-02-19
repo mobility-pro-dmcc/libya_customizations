@@ -46,13 +46,26 @@ class AccountClosingVoucher(Document):
 
 	def create_closing_entries(self):
 		for row in self.accounts_to_close:
+
+			account_currency = frappe.get_value(
+				"Account", row.account, "account_currency"
+			)
+
 			balance = get_balance_on(
 				account=row.account,
 				company=self.company,
-				date=self.posting_date
+				date=self.posting_date,
+				in_account_currency=True,
 			)
-			if balance != 0:
-				self.create_closing_entry(row.account, balance)
+
+			if not balance:
+				continue
+
+			self.create_closing_entry(
+				row.account, balance, account_currency
+			)
+
+
 	# def create_closing_entry(self, account, balance):
 	# 	first_entry = frappe.get_doc({
 	# 		"doctype": "GL Entry",
@@ -85,37 +98,96 @@ class AccountClosingVoucher(Document):
 	# 	})
 	# 	second_entry.insert()
 	
-	def create_closing_entry(self, account, balance):
-		journal_entry = frappe.get_doc({
-			"doctype": "Journal Entry",
-			"company": self.company,
-			"posting_date": self.posting_date,
-			"user_remark": self.remarks,
-			"accounts": [
-				{
-					"account": account,
-					"debit": abs(balance) if balance < 0 else 0,
-					"debit_in_account_currency": abs(balance) if balance < 0 else 0,
-					"credit": abs(balance) if balance > 0 else 0,
-					"credit_in_account_currency": abs(balance) if balance > 0 else 0,
-					"account_currency": frappe.get_value("Account", account, "account_currency"),
-					"reference_type": "Account Closing Voucher",
-					"reference_name": self.name,
-				},
-				{
-					"account": self.closing_account,
-					"debit": abs(balance) if balance > 0 else 0,
-					"debit_in_account_currency": abs(balance) if balance > 0 else 0,
-					"credit": abs(balance) if balance < 0 else 0,
-					"credit_in_account_currency": abs(balance) if balance < 0 else 0,
-					"account_currency": frappe.get_value("Account", self.closing_account, "account_currency"),
-					"reference_type": "Account Closing Voucher",
-					"reference_name": self.name,
-				}
-			]
-		})
-		journal_entry.submit()
+	# def create_closing_entry(self, account, balance):
+	# 	journal_entry = frappe.get_doc({
+	# 		"doctype": "Journal Entry",
+	# 		"company": self.company,
+	# 		"posting_date": self.posting_date,
+	# 		"user_remark": self.remarks,
+	# 		"accounts": [
+	# 			{
+	# 				"account": account,
+	# 				"debit": abs(balance) if balance < 0 else 0,
+	# 				"debit_in_account_currency": abs(balance) if balance < 0 else 0,
+	# 				"credit": abs(balance) if balance > 0 else 0,
+	# 				"credit_in_account_currency": abs(balance) if balance > 0 else 0,
+	# 				"account_currency": frappe.get_value("Account", account, "account_currency"),
+	# 				"reference_type": "Account Closing Voucher",
+	# 				"reference_name": self.name,
+	# 			},
+	# 			{
+	# 				"account": self.closing_account,
+	# 				"debit": abs(balance) if balance > 0 else 0,
+	# 				"debit_in_account_currency": abs(balance) if balance > 0 else 0,
+	# 				"credit": abs(balance) if balance < 0 else 0,
+	# 				"credit_in_account_currency": abs(balance) if balance < 0 else 0,
+	# 				"account_currency": frappe.get_value("Account", self.closing_account, "account_currency"),
+	# 				"reference_type": "Account Closing Voucher",
+	# 				"reference_name": self.name,
+	# 			}
+	# 		]
+	# 	})
+	# 	journal_entry.submit()
 
+	def create_closing_entry(self, account, balance, account_currency):
+
+			company_currency = frappe.get_cached_value(
+				"Company", self.company, "default_currency"
+			)
+
+			# get exchange rate only if different currency
+			exchange_rate = 1
+			company_balance = balance
+			if account_currency != company_currency:
+				company_balance = get_balance_on(
+					account=account,
+					company=self.company,
+					date=self.posting_date,
+					in_account_currency=False,
+				)
+				exchange_rate = abs(company_balance / balance)
+
+
+			journal_entry = frappe.get_doc({
+				"doctype": "Journal Entry",
+				"company": self.company,
+				"posting_date": self.posting_date,
+				"multi_currency": 1,
+				"user_remark": self.remarks,
+				"accounts": [
+					{
+						"account": account,
+						"account_currency": account_currency,
+						"exchange_rate": exchange_rate,
+
+						"debit_in_account_currency": abs(balance) if balance < 0 else 0,
+						"credit_in_account_currency": abs(balance) if balance > 0 else 0,
+
+						"debit": company_balance if balance < 0 else 0,
+						"credit": company_balance if balance > 0 else 0,
+
+						"reference_type": self.doctype,
+						"reference_name": self.name,
+					},
+					{
+						"account": self.closing_account,
+						"account_currency": self.closing_account_currency,
+						"exchange_rate": exchange_rate,
+
+						"debit_in_account_currency": abs(balance) if balance > 0 else 0,
+						"credit_in_account_currency": abs(balance) if balance < 0 else 0,
+
+						"debit": company_balance if balance > 0 else 0,
+						"credit": company_balance if balance < 0 else 0,
+
+						"reference_type": self.doctype,
+						"reference_name": self.name,
+					}
+				]
+			})
+			# frappe.throw(repr(journal_entry.as_dict()))
+			journal_entry.submit()
+	
 	def before_cancel(self):
 		self.flags.ignore_links = True
 
