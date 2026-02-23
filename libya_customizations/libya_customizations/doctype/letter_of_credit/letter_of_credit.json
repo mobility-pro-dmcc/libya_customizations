@@ -8,6 +8,7 @@
  "documentation": "https://github.com/citybirdman/libya_customizations",
  "engine": "InnoDB",
  "field_order": [
+  "is_old_lc",
   "lc_number",
   "supplier",
   "advising_bank",
@@ -67,8 +68,8 @@
    "fieldname": "advising_bank",
    "fieldtype": "Link",
    "label": "Advising Bank",
-   "options": "Advising Bank",
-   "reqd": 1
+   "mandatory_depends_on": "eval:!doc.is_old_lc",
+   "options": "Advising Bank"
   },
   {
    "fieldname": "issuing_bank",
@@ -101,7 +102,7 @@
    "fieldname": "request_date",
    "fieldtype": "Date",
    "label": "Request Date",
-   "reqd": 1
+   "mandatory_depends_on": "eval:!doc.is_old_lc"
   },
   {
    "fieldname": "expected_presentation_date",
@@ -117,9 +118,9 @@
    "fieldname": "lc_amount",
    "fieldtype": "Currency",
    "label": "LC Amount",
+   "mandatory_depends_on": "eval:!doc.is_old_lc",
    "non_negative": 1,
-   "precision": "2",
-   "reqd": 1
+   "precision": "2"
   },
   {
    "fieldname": "exchange_rate",
@@ -144,7 +145,7 @@
    "fieldname": "proforma_invoice",
    "fieldtype": "Attach",
    "label": "Proforma Invoice",
-   "reqd": 1
+   "mandatory_depends_on": "eval:!doc.is_old_lc"
   },
   {
    "fieldname": "lc_application",
@@ -266,13 +267,19 @@
    "fieldtype": "Currency",
    "label": "LC Coverage Difference",
    "non_negative": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "is_old_lc",
+   "fieldtype": "Check",
+   "label": "Is Old LC?"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
  "make_attachments_public": 1,
- "modified": "2026-02-02 11:21:02.665269",
+ "modified": "2026-02-23 12:24:21.069446",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Letter of Credit",

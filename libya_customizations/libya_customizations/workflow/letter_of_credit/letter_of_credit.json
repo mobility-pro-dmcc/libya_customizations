@@ -1,0 +1,21 @@
+{
+ "creation": "2026-02-23 12:32:05.266895",
+ "docstatus": 0,
+ "doctype": "Workflow",
+ "document_type": "Letter of Credit",
+ "edited_by": "User",
+ "idx": 0,
+ "is_active": 1,
+ "is_standard": 1,
+ "modified": "2026-02-23 12:39:57.037529",
+ "modified_by": "Administrator",
+ "module": "Mobility Customizations",
+ "name": "Letter of Credit",
+ "override_status": 0,
+ "owner": "Administrator",
+ "send_email_alert": 0,
+ "states": [],
+ "transitions": [],
+ "workflow_name": "Letter of Credit",
+ "workflow_state_field": "workflow_state"
+}
