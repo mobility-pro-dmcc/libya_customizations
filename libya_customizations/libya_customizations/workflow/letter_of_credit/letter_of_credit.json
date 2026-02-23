@@ -1,5 +1,5 @@
 {
- "creation": "2026-02-23 12:32:05.266895",
+ "creation": "2026-02-23 16:58:49.586325",
  "docstatus": 0,
  "doctype": "Workflow",
  "document_type": "Letter of Credit",
@@ -7,15 +7,89 @@
  "idx": 0,
  "is_active": 1,
  "is_standard": 1,
- "modified": "2026-02-23 12:39:57.037529",
+ "modified": "2026-02-23 17:01:42.356122",
  "modified_by": "Administrator",
- "module": "Mobility Customizations",
+ "module": "Libya Customizations",
  "name": "Letter of Credit",
  "override_status": 0,
  "owner": "Administrator",
  "send_email_alert": 0,
- "states": [],
- "transitions": [],
+ "states": [
+  {
+   "allow_edit": "Procurement Team",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Open"
+  },
+  {
+   "allow_edit": "Finance Team",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Pending"
+  },
+  {
+   "allow_edit": "Trade Finance Team",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Approved"
+  },
+  {
+   "allow_edit": "Administrator",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Rejected"
+  },
+  {
+   "allow_edit": "Administrator",
+   "avoid_status_override": 0,
+   "doc_status": "0",
+   "is_optional_state": 0,
+   "send_email": 1,
+   "state": "Presented"
+  }
+ ],
+ "transitions": [
+  {
+   "action": "Send",
+   "allow_self_approval": 1,
+   "allowed": "Procurement Team",
+   "next_state": "Pending",
+   "send_email_to_creator": 0,
+   "state": "Open"
+  },
+  {
+   "action": "Approve",
+   "allow_self_approval": 1,
+   "allowed": "Finance Team",
+   "next_state": "Approved",
+   "send_email_to_creator": 0,
+   "state": "Pending"
+  },
+  {
+   "action": "Reject",
+   "allow_self_approval": 1,
+   "allowed": "Finance Team",
+   "next_state": "Rejected",
+   "send_email_to_creator": 0,
+   "state": "Pending"
+  },
+  {
+   "action": "Present",
+   "allow_self_approval": 1,
+   "allowed": "Trade Finance Team",
+   "next_state": "Presented",
+   "send_email_to_creator": 0,
+   "state": "Approved"
+  }
+ ],
  "workflow_name": "Letter of Credit",
  "workflow_state_field": "workflow_state"
 }
