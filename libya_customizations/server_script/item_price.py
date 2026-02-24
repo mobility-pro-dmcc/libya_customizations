@@ -20,7 +20,7 @@ def export_item_price_data(filters):
     doctype = "Item Price"
     fields = ["name", "item_code", "item_name", "brand", "price_list_rate", "stock_valuation_rate", "stock_qty", "price_list"]
     filters = json.loads(filters)
-    names = frappe.get_all(doctype, filters=filters)
+    names = frappe.get_list(doctype, filters=filters)
     
     # Initialize the workbook and add header row
     workbook = Workbook()
