@@ -109,6 +109,7 @@ def get_values_for_validation(purchase_receipt):
 					SELECT
 						sales_order_item.item_code,
 						sales_order_item.production_year,
+						sales_order.set_warehouse,
 						IF(SUM(sales_order_item.qty - sales_order_item.delivered_qty) > 0,
 							SUM(sales_order_item.qty - sales_order_item.delivered_qty), 0) AS qty_to_deliver
 					FROM `tabSales Order Item` sales_order_item
