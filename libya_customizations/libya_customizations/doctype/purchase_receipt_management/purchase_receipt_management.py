@@ -13,7 +13,7 @@ class PurchaseReceiptManagement(Document):
 
 def production_year_filter(column, value):
 	if value:
-		return f'AND {column} = "{frappe.db.escape(value)}"'
+		return f'AND {column} = "{value}"'
 	return f'AND ({column} IS NULL OR {column} = "")'
 
 @frappe.whitelist()
@@ -88,9 +88,9 @@ def get_values_for_validation(purchase_receipt):
 					SELECT COALESCE(SUM(actual_qty), 0) AS actual_balance
 					FROM `tabStock Ledger Entry`
 					WHERE is_cancelled = 0
-						AND item_code = "{frappe.db.escape(row.item_code)}"
+						AND item_code = "{row.item_code}"
 						{production_filter}
-						AND warehouse = "{frappe.db.escape(doc.set_warehouse)}"
+						AND warehouse = "{doc.set_warehouse}"
 				) stock_actual
 			LEFT JOIN (
 				SELECT COALESCE(SUM(purchase_receipt_item.qty), 0) AS future_balance
@@ -99,9 +99,9 @@ def get_values_for_validation(purchase_receipt):
 				WHERE purchase_receipt_item.docstatus = 0
 					AND purchase_receipt.docstatus = 0
 					AND purchase_receipt.virtual_receipt = 1
-					AND purchase_receipt_item.item_code = "{frappe.db.escape(row.item_code)}"
+					AND purchase_receipt_item.item_code = "{row.item_code}"
 					{production_filter}
-					AND purchase_receipt_item.warehouse = "{frappe.db.escape(doc.set_warehouse)}"
+					AND purchase_receipt_item.warehouse = "{doc.set_warehouse}"
 			) purchase_future ON TRUE
 			LEFT JOIN (
 				SELECT COALESCE(SUM(qty_to_deliver), 0) AS actual_qty_to_deliver
@@ -121,11 +121,11 @@ def get_values_for_validation(purchase_receipt):
 						AND sales_order.reservation_status NOT IN ('Reserve against Future Receipts')
 						AND (sales_order_item.qty - sales_order_item.delivered_qty) > 0
 						AND item.is_stock_item = 1
-					GROUP BY sales_order_item.item_code, sales_order_item.production_year
+					GROUP BY sales_order_item.item_code, sales_order_item.production_year, sales_order.set_warehouse
 				) sales_order_item
-				WHERE item_code = "{frappe.db.escape(row.item_code)}"
+				WHERE item_code = "{row.item_code}"
 					{production_filter}
-					AND set_warehouse = "{frappe.db.escape(doc.set_warehouse)}"
+					AND set_warehouse = "{doc.set_warehouse}"
 			) sales_actual ON TRUE
 			LEFT JOIN (
 				SELECT COALESCE(SUM(qty_to_deliver), 0) AS future_qty_to_deliver
@@ -133,6 +133,7 @@ def get_values_for_validation(purchase_receipt):
 					SELECT
 						sales_order_item.item_code,
 						sales_order_item.production_year,
+						sales_order.set_warehouse,
 						IF(SUM(sales_order_item.qty - sales_order_item.delivered_qty) > 0,
 							SUM(sales_order_item.qty - sales_order_item.delivered_qty), 0) AS qty_to_deliver
 					FROM `tabSales Order Item` sales_order_item
@@ -144,11 +145,11 @@ def get_values_for_validation(purchase_receipt):
 						AND sales_order.reservation_status IN ('Reserve against Future Receipts')
 						AND (sales_order_item.qty - sales_order_item.delivered_qty) > 0
 						AND item.is_stock_item = 1
-					GROUP BY sales_order_item.item_code, sales_order_item.production_year
+					GROUP BY sales_order_item.item_code, sales_order_item.production_year, sales_order.set_warehouse
 				) sales_order_item
-				WHERE item_code = "{frappe.db.escape(row.item_code)}"
+				WHERE item_code = "{row.item_code}"
 					{production_filter}
-					AND set_warehouse = "{frappe.db.escape(doc.set_warehouse)}"
+					AND set_warehouse = "{doc.set_warehouse}"
 			) sales_future ON TRUE
 		""", as_dict=True)
 
