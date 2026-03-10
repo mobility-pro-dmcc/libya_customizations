@@ -438,3 +438,13 @@ def _update_available_quantities(doc):
 def update_available_qty_on_sales_order(doc, method):
     
     frappe.enqueue(_update_available_quantities, queue="long", timeout=300, doc=doc)
+
+def update_item_prices(doc, method):
+    from .stock_ledger_entry import update_item_price
+    rows = [frappe._dict({"item_code":row.item_code, "production_year": row.production_year}) for row in doc.items]
+    for item in rows:
+        update_item_price(item)
+
+def update_prices(doc, method):
+    frappe.enqueue(update_item_prices, queue="long", timeout=300, doc=doc)
+    frappe.db.commit()

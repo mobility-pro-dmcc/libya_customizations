@@ -1,15 +1,18 @@
 import frappe
+from frappe.utils import now_datetime
 
 def update_item_price(doc, method=None):
 
     values = get_valuation_rate_and_qty(doc.item_code, doc.production_year)
-
+    values["modified"] = now_datetime()
+    
     frappe.db.sql(
         """
         UPDATE `tabItem Price`
         SET stock_valuation_rate = %(stock_valuation_rate)s,
             stock_qty = %(stock_qty)s,
-            available_qty = %(available_qty)s
+            available_qty = %(available_qty)s,
+            modified = %(modified)s
         WHERE item_code = %(item_code)s
             AND IFNULL(production_year, '') = IFNULL(%(production_year)s, '')
         """, values,

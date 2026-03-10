@@ -103,27 +103,27 @@ fixtures = [
     {
         "doctype": "Custom HTML Block"
     },
-    {
-        "doctype": "Workflow"
-    },
+    # {
+    #     "doctype": "Workflow"
+    # },
     {
         "doctype": "Restrict Account View"
     },
     {
         "doctype": "Translation"
     },
-    {
-        "doctype": "Workflow Action Master"
-    },
+    # {
+    #     "doctype": "Workflow Action Master"
+    # },
     # {
     #     "doctype": "Document Naming Rule"
     # },
     {
         "doctype": "Number Card"
     },
-    {
-        "doctype": "Workflow State"
-    }
+    # {
+    #     "doctype": "Workflow State"
+    # }
 ]
 # Installation
 # ------------
@@ -226,7 +226,10 @@ doc_events = {
 		]
     },
     "Sales Order": {
-        "on_submit": "libya_customizations.server_script.sales_order.after_submit_sales_order",
+        "on_submit": [
+            "libya_customizations.server_script.sales_order.after_submit_sales_order",
+            "libya_customizations.server_script.sales_order.update_prices"
+        ],
         "before_submit": [
             "libya_customizations.server_script.sales_order.validate_before_submit_sales_order",
             "libya_customizations.server_script.sales_order.before_submit_sales_order"
@@ -237,7 +240,10 @@ doc_events = {
 			"libya_customizations.server_script.sales_order.validate_before_submit_sales_order",
             "libya_customizations.server_script.sales_order.update_available_qty_on_sales_order",
 		],
-        "on_cancel": "libya_customizations.server_script.sales_order.update_available_qty_on_sales_order"
+        "on_cancel": [
+            "libya_customizations.server_script.sales_order.update_available_qty_on_sales_order",
+            "libya_customizations.server_script.sales_order.update_prices"
+        ]
     },
     "Purchase Receipt": {
         "on_submit": "libya_customizations.server_script.purchase_receipt.on_submit",
