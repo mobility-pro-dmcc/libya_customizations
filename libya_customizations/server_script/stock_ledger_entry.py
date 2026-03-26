@@ -22,9 +22,9 @@ def update_item_price(doc, method=None):
 def get_valuation_rate_and_qty(item_code, production_year):
 
     avg_rate = frappe.db.sql("""
-        SELECT SUM(stock_value) / SUM(actual_qty)
-        FROM `tabBin`
-        WHERE item_code = %s AND actual_qty > 0
+        SELECT SUM(stock_value_difference) / SUM(actual_qty)
+        FROM `tabStock Ledger Entry`
+        WHERE item_code = %s AND is_cancelled = 0
     """, (item_code,))[0][0]
 
     # Get Stock Qty (based on item_code + production_year)

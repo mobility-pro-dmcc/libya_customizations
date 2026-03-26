@@ -7,6 +7,7 @@ from erpnext.stock.stock_ledger import (
     get_stock_value_difference,
 )
 import json
+from libya_customizations.server_script.stock_ledger_entry import update_item_price
 
 def process_sle(self, sle):
     # frappe.error_log("Custom process_sle called")
@@ -134,7 +135,7 @@ def process_sle(self, sle):
     sle.modified = now()
     sle_doc = frappe.get_doc(sle)
     sle_doc.db_update()
-    sle_doc.run_method("on_update")
+    update_item_price(sle_doc)
 
     if not self.args.get("sle_id") or (
         sle.serial_and_batch_bundle and sle.auto_created_serial_and_batch_bundle

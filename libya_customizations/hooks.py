@@ -250,7 +250,7 @@ doc_events = {
         "on_update_after_submit": "libya_customizations.server_script.purchase_receipt.on_update_after_submit"
     },
     "Stock Ledger Entry": {
-        "on_update": "libya_customizations.server_script.stock_ledger_entry.update_item_price"
+        "on_cancel": "libya_customizations.server_script.stock_ledger_entry.update_item_price"
     }
 }
 
