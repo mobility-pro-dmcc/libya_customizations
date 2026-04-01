@@ -405,3 +405,66 @@ def make_xlsx(data, sheet_name, wb=None, column_widths=None):
     xlsx_file = BytesIO()
     wb.save(xlsx_file)
     return xlsx_file
+
+
+def create_customer_reconciliation(party, company, account):
+	"""
+	Create a Process Payment Reconciliation for a customer if one doesn't already exist.
+	This prevents duplicate reconciliations from multiple voucher submissions.
+	
+	Args:
+		party: Customer name
+		company: Company name
+		account: Receivable account
+	"""
+	# Check if a reconciliation already exists for this customer (not cancelled)
+	existing = frappe.db.get_list(
+		"Process Payment Reconciliation",
+		filters={
+			"party_type": "Customer",
+			"party": party,
+			"company": company,
+			"docstatus": ["!=", 2]  # Exclude cancelled documents
+		},
+		limit_page_length=1
+	)
+	
+	if existing:
+		frappe.logger().info(f"Process Payment Reconciliation already exists for Customer {party}")
+		return
+	
+	# Check for unallocated amounts that need reconciliation
+	unallocated_amount = frappe.db.get_value(
+		"Payment Entry",
+		[["party", "=", party], ["unallocated_amount", ">", 0], ["docstatus", "=", 1]],
+		"sum(unallocated_amount)"
+	) or 0
+	
+	credit_amount = frappe.db.get_value(
+		"Journal Entry Account",
+		[["party", "=", party], ["credit", ">", 0], ["reference_name", "=", None], ["docstatus", "=", 1]],
+		"sum(credit)"
+	) or 0
+	
+	cn_amount = frappe.db.get_value(
+		"Sales Invoice",
+		[["customer", "=", party], ["outstanding_amount", "<", 0], ["is_return", "=", 1], ["docstatus", "=", 1]],
+		"sum(outstanding_amount)"
+	) or 0
+	
+	# Only create reconciliation if there are amounts to reconcile
+	if unallocated_amount or credit_amount or cn_amount:
+		try:
+			reconciliation = frappe.get_doc({
+				"doctype": "Process Payment Reconciliation",
+				"party_type": "Customer",
+				"party": party,
+				"company": company,
+				"receivable_payable_account": account,
+				"default_advance_account": account
+			}).insert(ignore_permissions=True)
+			reconciliation.save(ignore_permissions=True)
+			reconciliation.submit()
+			frappe.logger().info(f"Created Process Payment Reconciliation for Customer {party}")
+		except Exception as e:
+			frappe.logger().warning(f"Error creating reconciliation for {party}: {str(e)}")
