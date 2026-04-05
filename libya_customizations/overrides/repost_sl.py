@@ -134,6 +134,7 @@ def process_sle(self, sle):
     sle.modified = now()
     sle_doc = frappe.get_doc(sle)
     sle_doc.db_update()
+    
     update_item_price(sle_doc)
 
 

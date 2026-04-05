@@ -4,4 +4,4 @@
 [post_model_sync]
 libya_customizations.patches.v15.create_branch_dimension
 libya_customizations.patches.v15.create_stock_entry_workflow
-libya_customizations.patches.v15.update_payment_status
+# libya_customizations.patches.v15.update_payment_status
