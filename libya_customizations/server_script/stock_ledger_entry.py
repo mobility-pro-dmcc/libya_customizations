@@ -5,13 +5,14 @@ def update_item_price(doc, method=None):
     # for item in doc.items:
     values = get_valuation_rate_and_qty(doc.item_code)
     values["modified"] = now_datetime()
+    values["pl"] = frappe.db.get_value("Warehouse", doc.warehouse, "default_selling_price_list")
     frappe.db.sql(
         """
         UPDATE `tabItem Price`
         SET stock_valuation_rate = %(stock_valuation_rate)s,
             stock_qty = %(stock_qty)s,
             modified = %(modified)s
-        WHERE item_code = %(item_code)s
+        WHERE item_code = %(item_code)s AND price_list = %(pl)s
         """, values,
     )
     frappe.db.commit()

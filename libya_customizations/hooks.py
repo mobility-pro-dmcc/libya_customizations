@@ -208,9 +208,9 @@ doc_events = {
 			"libya_customizations.server_script.sales_invoice.reconcile_everything",
 		]
     },
-    # "Stock Ledger Entry": {
-    #     "on_update": "libya_customizations.server_script.stock_ledger_entry.update_item_price"
-    # },
+    "Stock Ledger Entry": {
+        "on_update": "libya_customizations.server_script.stock_ledger_entry.update_item_price"
+    },
     "Purchase Invoice": {
         "on_submit": "libya_customizations.server_script.purchase_invoice.on_submit",
         "on_update_after_submit": "libya_customizations.server_script.purchase_invoice.on_update_after_submit",
