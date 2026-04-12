@@ -149,6 +149,12 @@ override_doctype_class = {
 	"Sales Order": "libya_customizations.overrides.sales_order.CustomSalesOrder"
 }
 
+# Fixtures
+# -------
+fixtures = [
+	{"doctype": "Property Setter"}
+]
+
 # Document Events
 # ---------------
 # Hook on document methods and events
