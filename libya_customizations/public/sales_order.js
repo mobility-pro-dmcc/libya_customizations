@@ -10,7 +10,7 @@ frappe.ui.form.on("Sales Order", {
 			frm.fields_dict.items.grid.grid_buttons[0].children[3].style.display = "none";
 			frm.fields_dict['items'].grid.wrapper.find('.grid-delete-row').hide();
 			frm.fields_dict.items.wrapper.querySelector(".grid-upload").style.display = "none";
-			frm.fields_dict.items.wrapper.querySelector(".grid-download").style.display = "none";
+			// frm.fields_dict.items.wrapper.querySelector(".grid-download").style.display = "none";
 		}
         // frm.remove_custom_button("Update Items")
 		if(frm.doc.docstatus === 1 && frm.doc.per_delivered !== 100){
