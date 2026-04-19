@@ -54,23 +54,23 @@ def on_submit(doc, method):
             "description": "Local Bank Charges",
             "amount": doc.local_bank_charges_amount
         })
-             
+            
     landed_costs.append({
-		"expense_account":doc.clearance_account,
-		"description": "Clearance",
-		"amount": doc.clearance_amount
+        "expense_account":doc.clearance_account,
+        "description": "Clearance",
+        "amount": doc.clearance_amount
         })
     
     landed_costs.append({
         "expense_account":doc.transport_account,
         "description": "Transport",
         "amount": doc.transport_amount
-    	})
+        })
 
     landed_cost_voucher.get_items_from_purchase_receipts()
     landed_cost_voucher.update({
         "taxes": landed_costs
-	})
+    })
     landed_cost_voucher.insert(ignore_permissions=True)
     landed_cost_voucher.submit()
 
@@ -135,6 +135,18 @@ def on_update_after_submit(doc, method):
         "amount": doc.transport_amount
         })
 
+    landed_costs.append({
+        "expense_account":doc.other_foreign_charges_account,
+        "description": "Other Foreign Charges",
+        "amount": doc.other_foreign_charges_amount,
+        "account_currency": doc.other_foreign_charges_account_currency,
+        "exchange_rate": doc.other_foreign_charges_exchange_rate
+        })
+    landed_costs.append({
+        "expense_account":doc.other_local_charges_account,
+        "description": "Other Local Charges",
+        "amount": doc.other_local_charges_amount
+        })
     # d = frappe.get_doc(doctype, dd)
     d.taxes = []
     d.set("taxes", landed_costs)

@@ -23,6 +23,12 @@ def before_update_after_submit(doc, method):
             foreign_bank_charges_exchange_rate = doc.foreign_bank_charges_exchange_rate or 0,
             local_bank_charges_account = doc.local_bank_charges_account,
             local_bank_charges_amount = doc.local_bank_charges_amount or 0,
+            other_foreign_charges_account = doc.other_foreign_charges_account,
+            other_foreign_charges_account_currency = doc.other_foreign_charges_account_currency,
+            other_foreign_charges_amount = doc.other_foreign_charges_amount,
+            other_foreign_charges_exchange_rate = doc.other_foreign_charges_exchange_rate,
+            other_local_charges_account = doc.other_local_charges_account,
+            other_local_charges_amount = doc.other_local_charges_amount,
         ))
         pr = frappe.get_doc("Purchase Receipt", purchase_receipt)
         pr.save()
