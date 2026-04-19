@@ -218,6 +218,9 @@ doc_events = {
         "before_update_after_submit": "libya_customizations.server_script.purchase_invoice.update_status",
         "before_cancel": "libya_customizations.server_script.purchase_invoice.update_status",
         "before_submit": "libya_customizations.server_script.purchase_invoice.update_status",
+    },
+    "Stock Entry": {
+        "after_insert": "libya_customizations.server_script.stock_entry.after_stock_entry_insert"
     }
 }
 
