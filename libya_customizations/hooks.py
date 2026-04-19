@@ -220,7 +220,9 @@ doc_events = {
         "before_submit": "libya_customizations.server_script.purchase_invoice.update_status",
     },
     "Stock Entry": {
-        "after_insert": "libya_customizations.server_script.stock_entry.after_stock_entry_insert"
+        "on_update": [
+            "libya_customizations.server_script.stock_entry.share_on_pending_submission"
+        ]
     }
 }
 
