@@ -54,7 +54,23 @@ def on_submit(doc, method):
             "description": "Local Bank Charges",
             "amount": doc.local_bank_charges_amount
         })
-            
+           
+    if(doc.other_foreign_charges_amount):
+        landed_costs.append({
+            "expense_account":doc.other_foreign_charges_account,
+            "account_currency": doc.other_foreign_charges_account_currency,
+            "exchange_rate": doc.other_foreign_charges_exchange_rate,
+            "description": "Other Foreign Charges",
+            "amount": doc.other_foreign_charges_amount
+        })
+        
+    if(doc.other_local_charges_amount):
+        landed_costs.append({
+            "expense_account":doc.other_local_charges_account,
+            "description": "Other Local Charges",
+            "amount": doc.other_local_charges_amount
+        })
+
     landed_costs.append({
         "expense_account":doc.clearance_account,
         "description": "Clearance",
@@ -122,6 +138,22 @@ def on_update_after_submit(doc, method):
             "description": "Local Bank Charges",
             "amount": doc.local_bank_charges_amount
         })
+    
+    if(doc.other_foreign_charges_amount):
+        landed_costs.append({
+            "expense_account":doc.other_foreign_charges_account,
+            "account_currency": doc.other_foreign_charges_account_currency,
+            "exchange_rate": doc.other_foreign_charges_exchange_rate,
+            "description": "Other Foreign Charges",
+            "amount": doc.other_foreign_charges_amount
+        })
+        
+    if(doc.other_local_charges_amount):
+        landed_costs.append({
+            "expense_account":doc.other_local_charges_account,
+            "description": "Other Local Charges",
+            "amount": doc.other_local_charges_amount
+        })
             
     landed_costs.append({
         "expense_account":doc.clearance_account,
@@ -133,19 +165,6 @@ def on_update_after_submit(doc, method):
         "expense_account":doc.transport_account,
         "description": "Transport",
         "amount": doc.transport_amount
-        })
-
-    landed_costs.append({
-        "expense_account":doc.other_foreign_charges_account,
-        "description": "Other Foreign Charges",
-        "amount": doc.other_foreign_charges_amount,
-        "account_currency": doc.other_foreign_charges_account_currency,
-        "exchange_rate": doc.other_foreign_charges_exchange_rate
-        })
-    landed_costs.append({
-        "expense_account":doc.other_local_charges_account,
-        "description": "Other Local Charges",
-        "amount": doc.other_local_charges_amount
         })
     # d = frappe.get_doc(doctype, dd)
     d.taxes = []
