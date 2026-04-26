@@ -221,7 +221,8 @@ def handle_title_change(doc, method=None):
     repost.insert(ignore_permissions=True)
     repost.submit()
 
-def add_item_prices(doc, method):
+
+def add_item_prices(doc):
     # 1. get all selling price lists once
     price_lists = frappe.db.get_list(
         "Price List",
@@ -230,7 +231,7 @@ def add_item_prices(doc, method):
         ignore_permissions=True
     )
 
-    if not price_lists or not doc.items:
+    if not doc.items:
         return
 
     # 2. collect all production years
@@ -240,30 +241,28 @@ def add_item_prices(doc, method):
     existing_prices = frappe.db.get_all(
         "Item Price",
         filters={
-            "item_code": doc.item_code,
+            "item_code": ["in", [item.item_code for item in doc.items]],
             "price_list": ["in", price_lists],
             "production_year": ["in", production_years],
         },
-        fields=["price_list", "production_year"]
+        fields=["price_list", "production_year", "item_code"]
     )
 
     # 4. build fast lookup set
     existing_set = {
-        (row.price_list, row.production_year)
+        (row.price_list, row.production_year, row.item_code)
         for row in existing_prices
     }
-
     # 5. create missing item prices
     for item in doc.items:
         for price_list in price_lists:
-            key = (price_list, item.production_year)
+            key = (price_list, item.production_year, item.item_code)
 
             if key in existing_set:
                 continue
-
             frappe.get_doc({
                 "doctype": "Item Price",
-                "item_code": doc.item_code,
+                "item_code": item.item_code,
                 "price_list": price_list,
                 "price_list_rate": 0,
                 "selling": 1,
@@ -272,5 +271,4 @@ def add_item_prices(doc, method):
                 "item_description": doc.description,
                 "production_year": item.production_year
             }).insert(ignore_permissions=True)
-
             existing_set.add(key)

@@ -320,7 +320,7 @@
    "link_fieldname": "custom_voucher_no"
   }
  ],
- "modified": "2025-06-28 20:25:25.269089",
+ "modified": "2026-04-22 17:12:13.469398",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Clearing Voucher",
@@ -345,6 +345,7 @@
    "write": 1
   }
  ],
+ "row_format": "Dynamic",
  "sort_field": "modified",
  "sort_order": "DESC",
  "states": [],
