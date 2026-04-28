@@ -15,7 +15,6 @@ def update_item_price(doc, method=None):
         WHERE item_code = %(item_code)s AND price_list = %(pl)s
         """, values,
     )
-    frappe.db.commit()
 
 
 def get_valuation_rate_and_qty(item_code):
