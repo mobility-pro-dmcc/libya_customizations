@@ -37,6 +37,7 @@
   "added_amount",
   "target_exchange_rate",
   "base_added_amount",
+  "include_party_balance_in_print",
   "section_break_30",
   "remark",
   "status",
@@ -309,6 +310,12 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "include_party_balance_in_print",
+   "fieldtype": "Check",
+   "label": "Include Party Balance In Print"
   }
  ],
  "index_web_pages_for_search": 1,
@@ -320,7 +327,7 @@
    "link_fieldname": "custom_voucher_no"
   }
  ],
- "modified": "2026-04-22 17:12:13.469398",
+ "modified": "2026-05-03 15:02:57.947226",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Clearing Voucher",

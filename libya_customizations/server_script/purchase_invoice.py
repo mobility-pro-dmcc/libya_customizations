@@ -235,7 +235,7 @@ def add_item_prices(doc):
         return
 
     # 2. collect all production years
-    production_years = list({item.production_year for item in doc.items})
+    production_years = list({(None if item.production_year == '' else item.production_year) for item in doc.items})
 
     # 3. get existing item prices once
     existing_prices = frappe.db.get_all(
@@ -256,7 +256,7 @@ def add_item_prices(doc):
     # 5. create missing item prices
     for item in doc.items:
         for price_list in price_lists:
-            key = (price_list, item.production_year, item.item_code)
+            key = (price_list, (None if item.production_year == '' else item.production_year), item.item_code)
 
             if key in existing_set:
                 continue
@@ -269,6 +269,6 @@ def add_item_prices(doc):
                 "item_name": doc.item_name,
                 "brand": doc.brand,
                 "item_description": doc.description,
-                "production_year": item.production_year
+                "production_year": (None if item.production_year == '' else item.production_year)
             }).insert(ignore_permissions=True)
             existing_set.add(key)
