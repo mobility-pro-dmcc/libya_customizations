@@ -312,6 +312,7 @@
    "search_index": 1
   },
   {
+   "allow_on_submit": 1,
    "default": "0",
    "fieldname": "include_party_balance_in_print",
    "fieldtype": "Check",
@@ -327,7 +328,7 @@
    "link_fieldname": "custom_voucher_no"
   }
  ],
- "modified": "2026-05-03 15:02:57.947226",
+ "modified": "2026-05-09 11:05:01.270733",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Clearing Voucher",
