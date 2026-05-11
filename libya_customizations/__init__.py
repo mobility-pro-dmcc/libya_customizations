@@ -13,6 +13,5 @@ try:
     from libya_customizations.overrides.repost_sl import process_sle
 
     update_entries_after.process_sle = process_sle
-    print("Override applied: update_entries_after.process_sle")
 except Exception as e:
-    print(f"Error applying override: {e}")
+    pass

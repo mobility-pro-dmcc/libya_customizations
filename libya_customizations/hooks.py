@@ -263,13 +263,13 @@ doc_events = {
 #         ]
 #     }
 # }
-# scheduler_events = {
+scheduler_events = {
 # 	"all": [
 # 		"libya_customizations.tasks.all"
 # 	],
-# 	"daily": [
-# 		"libya_customizations.tasks.daily"
-# 	],
+	"daily": [
+		"libya_customizations.events.repost_incorrect_sles"
+	],
 # 	"hourly": [
 # 		"libya_customizations.tasks.hourly"
 # 	],
@@ -279,7 +279,7 @@ doc_events = {
 # 	"monthly": [
 # 		"libya_customizations.tasks.monthly"
 # 	],
-# }
+}
 
 # Testing
 # -------
