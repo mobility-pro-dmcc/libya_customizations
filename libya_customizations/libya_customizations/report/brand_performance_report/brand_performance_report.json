@@ -68,9 +68,8 @@
  ],
  "idx": 1,
  "is_standard": "Yes",
- "letter_head": "",
- "letterhead": null,
- "modified": "2025-11-01 03:00:41.715524",
+ "letter_head": null,
+ "modified": "2026-05-13 08:05:44.372047",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Brand Performance Report",
@@ -79,7 +78,7 @@
  "query": "WITH\nitem AS (\n    SELECT\n        name AS item_code,\n        item_name,\n        brand\n    FROM\n        `tabItem`\n),\nsales AS (\n    SELECT\n        si_item.item_code,\n        SUM(si_item.qty) AS qty,\n        SUM(si_item.net_amount) AS net_amount\n    FROM\n        `tabSales Invoice Item` si_item\n    INNER JOIN\n        `tabSales Invoice` si\n    ON\n        si_item.parent = si.name\n    WHERE\n        si_item.docstatus = 1\n        AND si.docstatus = 1\n        AND si.posting_date BETWEEN %(from_date)s AND %(to_date)s\n    GROUP BY\n        si_item.item_code\n),\ncogs AS (\n    SELECT\n        item_code,\n        SUM(stock_value_difference) * -1 AS stock_value_difference\n    FROM\n        `tabStock Ledger Entry`\n    WHERE\n        is_cancelled = 0\n        AND voucher_type IN ('Sales Invoice', 'Delivery Note')\n        AND posting_date BETWEEN %(from_date)s AND %(to_date)s\n    GROUP BY\n        item_code\n),\nstock AS (\n    SELECT\n        item_code,\n        SUM(actual_qty) AS actual_qty\n    FROM\n        `tabStock Ledger Entry`\n    WHERE\n        is_cancelled = 0\n        AND posting_date <= %(to_date)s\n    GROUP BY\n        item_code\n)\nSELECT\n    item.brand,\n    IFNULL(SUM(sales.qty), 0) AS sales_qty,\n    IFNULL(SUM(sales.net_amount), 0) AS sales_amount,\n    IFNULL(SUM(cogs.stock_value_difference), 0) AS sales_cost,\n    IFNULL(SUM(sales.net_amount), 0) - IFNULL(SUM(cogs.stock_value_difference), 0) AS gross_profit,\n    CONCAT(FORMAT(ROUND((IFNULL(SUM(sales.net_amount), 0) - IFNULL(SUM(cogs.stock_value_difference), 0)) / IFNULL(SUM(cogs.stock_value_difference), 0) * 100, 1), 1), '%%') AS markup,\n    IFNULL(stock.actual_qty, 0) AS stock_qty\nFROM\n    item\nLEFT JOIN\n    sales\nON\n    item.item_code = sales.item_code\nLEFT JOIN\n    cogs\nON\n    item.item_code = cogs.item_code\nLEFT JOIN\n    stock\nON\n    item.item_code = stock.item_code\nWHERE\n    ABS(IFNULL(sales.qty, 0)) + IFNULL(stock.actual_qty, 0) > 0\nGROUP BY\n    item.brand\nORDER BY\n    item.brand,\n    IFNULL(sales.qty, 0) DESC",
  "ref_doctype": "Item",
  "report_name": "Brand Performance Report",
- "report_type": "Query Report",
+ "report_type": "Script Report",
  "roles": [
   {
    "role": "System Manager"
