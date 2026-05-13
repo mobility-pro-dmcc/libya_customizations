@@ -47,7 +47,7 @@
    "width": 130
   },
   {
-   "fieldname": "markup",
+   "fieldname": "gpm",
    "fieldtype": "Data",
    "label": "Profit %",
    "width": 80
@@ -77,22 +77,29 @@
    "label": "To Date",
    "mandatory": 1,
    "wildcard_filter": 0
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "mandatory": 1,
+   "options": "Branch",
+   "wildcard_filter": 0
   }
  ],
  "idx": 9,
  "is_standard": "Yes",
- "letter_head": "",
- "letterhead": null,
- "modified": "2025-11-01 03:00:54.750612",
+ "letter_head": null,
+ "modified": "2026-05-13 06:49:03.988395",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Item Performance Report",
  "owner": "Administrator",
  "prepared_report": 0,
- "query": "WITH\nitem AS (\n    SELECT\n        name AS item_code,\n        item_name,\n        brand\n    FROM\n        `tabItem`\n),\nsales AS (\n    SELECT\n        si_item.item_code,\n        SUM(si_item.qty) AS qty,\n        SUM(si_item.net_amount) AS net_amount\n    FROM\n        `tabSales Invoice Item` si_item\n    INNER JOIN\n        `tabSales Invoice` si\n    ON\n        si_item.parent = si.name\n    WHERE\n        si_item.docstatus = 1\n        AND si.docstatus = 1\n        AND si.posting_date BETWEEN %(from_date)s AND %(to_date)s\n    GROUP BY\n        si_item.item_code\n),\ncogs AS (\n    SELECT\n        item_code,\n        SUM(stock_value_difference) * -1 AS stock_value_difference\n    FROM\n        `tabStock Ledger Entry`\n    WHERE\n        is_cancelled = 0\n        AND voucher_type IN ('Sales Invoice', 'Delivery Note')\n        AND posting_date BETWEEN %(from_date)s AND %(to_date)s\n    GROUP BY\n        item_code\n),\nstock AS (\n    SELECT\n        item_code,\n        SUM(actual_qty) AS actual_qty\n    FROM\n        `tabStock Ledger Entry`\n    WHERE\n        is_cancelled = 0\n        AND posting_date <= %(to_date)s\n    GROUP BY\n        item_code\n)\nSELECT\n    item.item_code,\n    item.item_name,\n    item.brand,\n    IFNULL(sales.qty, 0) AS sales_qty,\n    IFNULL(sales.net_amount, 0) AS sales_amount,\n    IFNULL(cogs.stock_value_difference, 0) AS sales_cost,\n    IFNULL(sales.net_amount, 0) - IFNULL(cogs.stock_value_difference, 0) AS gross_profit,\n    CONCAT(FORMAT(ROUND((IFNULL(sales.net_amount, 0) - IFNULL(cogs.stock_value_difference, 0)) / IFNULL(cogs.stock_value_difference, 0) * 100, 1), 1), '%%') AS markup,\n    IFNULL(stock.actual_qty, 0) AS stock_qty\nFROM\n    item\nLEFT JOIN\n    sales\nON\n    item.item_code = sales.item_code\nLEFT JOIN\n    cogs\nON\n    item.item_code = cogs.item_code\nLEFT JOIN\n    stock\nON\n    item.item_code = stock.item_code\nWHERE\n    ABS(IFNULL(sales.qty, 0)) + IFNULL(stock.actual_qty, 0) > 0\nORDER BY\n    item.brand,\n    IFNULL(sales.qty, 0) DESC",
+ "query": "WITH\nitem AS (\n    SELECT\n        name AS item_code,\n        item_name,\n        brand\n    FROM\n        `tabItem`\n),\nsi_dn AS (\n    SELECT\n        si.name,\n        cg.branch\n    FROM \n        `tabSales Invoice` si\n    LEFT JOIN\n        `tabCustomer Group` cg\n    ON\n        si.customer_group = cg.name\n    WHERE\n        si.docstatus = 1\n        AND si.posting_date BETWEEN %(from_date)s AND %(to_date)s\n    UNION\n    SELECT\n        dn.name,\n        cg.branch\n    FROM\n        `tabDelivery Note`\n    LEFT JOIN\n        `tabCustomer Group` cg\n    ON\n        si.customer_group = cg.name\n    WHERE\n        dn.docstatus = 1\n        AND dn.posting_date BETWEEN %(from_date)s AND %(to_date)s\n),\nsales AS (\n    SELECT\n        si_item.item_code,\n        SUM(si_item.qty) AS qty,\n        SUM(si_item.net_amount) AS net_amount\n    FROM\n        `tabSales Invoice Item` si_item\n    INNER JOIN\n        `tabSales Invoice` si\n    ON\n        si_item.parent = si.name\n    LEFT JOIN\n        `tabCustomer Group` cg\n    ON\n        si.customer_group = cg.name\n    WHERE\n        si_item.docstatus = 1\n        AND si.docstatus = 1\n        AND cg.branch = %(branch)s\n        AND si.posting_date BETWEEN %(from_date)s AND %(to_date)s\n    GROUP BY\n        si_item.item_code\n),\ncogs AS (\n    SELECT\n        sle.item_code,\n        SUM(sle.stock_value_difference) * -1 AS stock_value_difference\n    FROM\n        `tabStock Ledger Entry` sle\n    LEFT JOIN\n        si_dn\n    ON\n        sle.voucher_no = si_dn.name\n    WHERE\n        sle.is_cancelled = 0\n        AND sle.voucher_type IN ('Sales Invoice', 'Delivery Note')\n        AND si_dn.branch = %(branch)s\n        AND sle.posting_date BETWEEN %(from_date)s AND %(to_date)s\n    GROUP BY\n        sle.item_code\n),\nstock AS (\n    SELECT\n        sle.item_code,\n        SUM(sle.actual_qty) AS actual_qty\n    FROM\n        `tabStock Ledger Entry` sle\n    INNER JOIN\n        `tabWarehouse` w\n    ON\n        sle.warehouse = w.name\n    WHERE\n        sle.is_cancelled = 0\n        AND w.branch = %(branch)s\n        AND sle.posting_date <= %(to_date)s\n    GROUP BY\n        sle.item_code\n)\nSELECT\n    item.item_code,\n    item.item_name,\n    item.brand,\n    IFNULL(sales.qty, 0) AS sales_qty,\n    IFNULL(sales.net_amount, 0) AS sales_amount,\n    IFNULL(cogs.stock_value_difference, 0) AS sales_cost,\n    IFNULL(sales.net_amount, 0) - IFNULL(cogs.stock_value_difference, 0) AS gross_profit,\n    CONCAT(FORMAT(ROUND((IFNULL(sales.net_amount, 0) - IFNULL(cogs.stock_value_difference, 0)) / IFNULL(sales.net_amount, 0) * 100, 1), 1), '%%') AS gpm,\n    IFNULL(stock.actual_qty, 0) AS stock_qty\nFROM\n    item\nLEFT JOIN\n    sales\nON\n    item.item_code = sales.item_code\nLEFT JOIN\n    cogs\nON\n    item.item_code = cogs.item_code\nLEFT JOIN\n    stock\nON\n    item.item_code = stock.item_code\nWHERE\n    ABS(IFNULL(sales.qty, 0)) + IFNULL(stock.actual_qty, 0) > 0\nORDER BY\n    item.brand,\n    IFNULL(sales.qty, 0) DESC",
  "ref_doctype": "Item",
  "report_name": "Item Performance Report",
- "report_type": "Query Report",
+ "report_type": "Script Report",
  "roles": [
   {
    "role": "System Manager"
