@@ -192,13 +192,14 @@ def validate_before_submit_sales_order(doc, method):
     
     payment_terms_template = frappe.db.get_value('Customer', doc.customer, 'payment_terms')
     if payment_terms_template:
+        accounts_settings = frappe.get_single("Accounts Settings")
         bypass_overdue_check = frappe.db.get_value('Customer', doc.customer, 'bypass_overdue_check')
         user_has_cso = frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "=", "Chief Sales Officer"]])
         credit_days = frappe.db.get_value('Payment Terms Template Detail', {'parent': payment_terms_template}, 'credit_days')
         outstanding = frappe.db.get_value('Sales Invoice', {'docstatus': 1, 'customer': doc.customer, 'posting_date': ['<', frappe.utils.add_days(frappe.utils.nowdate(), - credit_days)]}, 'sum(outstanding_amount)')
         outstanding = outstanding if outstanding else 0
 
-        if outstanding > 0 and not (bypass_overdue_check or user_has_cso):
+        if 0 > outstanding > accounts_settings.custom_overdue_tolerance_amount and not (bypass_overdue_check or user_has_cso or accounts_settings.custom_overdue_controller):
             frappe.msgprint(msg=_("There are overdue outstandings valued at {0} against the Customer").format('{:0,.2f}'.format(outstanding)), title=_('Error'), indicator='red')
             raise frappe.ValidationError
         # elif outstanding > 0 and (bypass_overdue_check or user_has_cso):
