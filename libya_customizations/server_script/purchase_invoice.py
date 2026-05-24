@@ -222,7 +222,7 @@ def handle_title_change(doc, method=None):
     repost.submit()
 
 
-def add_item_prices(doc):
+def add_item_prices(doc, method=None):
     # 1. get all selling price lists once
     price_lists = frappe.db.get_list(
         "Price List",
@@ -266,9 +266,9 @@ def add_item_prices(doc):
                 "price_list": price_list,
                 "price_list_rate": 0,
                 "selling": 1,
-                "item_name": doc.item_name,
-                "brand": doc.brand,
-                "item_description": doc.description,
+                "item_name": item.item_name,
+                "brand": item.brand,
+                "item_description": item.description,
                 "production_year": (None if item.production_year == '' else item.production_year)
             }).insert(ignore_permissions=True)
             existing_set.add(key)

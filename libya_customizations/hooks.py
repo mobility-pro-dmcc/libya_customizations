@@ -197,7 +197,7 @@ doc_events = {
         "on_update": "libya_customizations.server_script.purchase_invoice.handle_title_change",
         "before_update_after_submit": "libya_customizations.server_script.purchase_invoice.before_update_after_submit",
         "before_submit": "libya_customizations.server_script.purchase_invoice.validate_post_carriage_costs",
-        "after_submit": "libya_customizations.server_script.purchase_invoice.add_item_prices",
+        "on_submit": "libya_customizations.server_script.purchase_invoice.add_item_prices",
         "on_update_after_submit": "libya_customizations.server_script.purchase_invoice.handle_title_change",
     },
     "Sales Invoice":{
