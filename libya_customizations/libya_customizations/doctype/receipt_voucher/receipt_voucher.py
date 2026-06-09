@@ -3,7 +3,7 @@
 
 import frappe
 from frappe.model.document import Document
-from libya_customizations import reconcile_payments as reconcile_payments_entries
+from libya_customizations.utils import reconcile_payments as reconcile_payments_entries
 from frappe import _
 
 
