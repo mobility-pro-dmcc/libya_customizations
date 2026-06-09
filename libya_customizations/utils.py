@@ -12,7 +12,7 @@ from erpnext.stock.get_item_details import get_conversion_factor
 
 @frappe.whitelist()
 def get_linked_document(linked_doctype, docname, linked_field, field):
-    return frappe.db.get_value(linked_doctype, [[linked_field, "=", docname]], field)
+	return frappe.db.get_value(linked_doctype, [[linked_field, "=", docname]], field)
 
 @frappe.whitelist()
 def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, child_docname="items"):
@@ -77,7 +77,7 @@ def update_child_qty_rate(parent_doctype, trans_items, parent_doctype_name, chil
 
 		1. Change rate of subcontracting - regardless of other changes.
 		2. Change qty and/or add new items and/or remove items
-		        Exception: Transfer/Consumption is already made, qty change not allowed.
+				Exception: Transfer/Consumption is already made, qty change not allowed.
 		"""
 
 		supplied_items_processed = any(
@@ -352,61 +352,61 @@ from openpyxl.styles import PatternFill, Font
 from io import BytesIO
 
 def make_xlsx(data, sheet_name, wb=None, column_widths=None):
-    column_widths = column_widths or []
-    if wb is None:
-        wb = Workbook()
+	column_widths = column_widths or []
+	if wb is None:
+		wb = Workbook()
 
-    # Sanitize sheet name
-    sheet_name_sanitized = INVALID_TITLE_REGEX.sub(" ", sheet_name)
-    ws = wb.create_sheet(sheet_name_sanitized, 0)
+	# Sanitize sheet name
+	sheet_name_sanitized = INVALID_TITLE_REGEX.sub(" ", sheet_name)
+	ws = wb.create_sheet(sheet_name_sanitized, 0)
 
-    # Define green fill for the first row
-    green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")  # Light green
+	# Define green fill for the first row
+	green_fill = PatternFill(start_color="90EE90", end_color="90EE90", fill_type="solid")  # Light green
 
-    # Apply green fill to the first row
+	# Apply green fill to the first row
 
-    # Set bold font for the first row
-    row1 = ws.row_dimensions[1]
-    row1.font = Font(name="Calibri", bold=True)
+	# Set bold font for the first row
+	row1 = ws.row_dimensions[1]
+	row1.font = Font(name="Calibri", bold=True)
 
-    # Process data and write to the sheet
-    for row in data:
-        clean_row = []
-        for item in row:
-            if isinstance(item, str) and (sheet_name not in ["Data Import Template", "Data Export"]):
-                value = handle_html(item)
-            else:
-                value = item
+	# Process data and write to the sheet
+	for row in data:
+		clean_row = []
+		for item in row:
+			if isinstance(item, str) and (sheet_name not in ["Data Import Template", "Data Export"]):
+				value = handle_html(item)
+			else:
+				value = item
 
-            if isinstance(item, str) and next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
-                # Remove illegal characters from the string
-                value = ILLEGAL_CHARACTERS_RE.sub("", value)
+			if isinstance(item, str) and next(ILLEGAL_CHARACTERS_RE.finditer(value), None):
+				# Remove illegal characters from the string
+				value = ILLEGAL_CHARACTERS_RE.sub("", value)
 
-            clean_row.append(value)
+			clean_row.append(value)
 
-        ws.append(clean_row)
+		ws.append(clean_row)
 
-    for cell in ws[1]:
-        cell.fill = green_fill
-    # Auto-fit column widths
-    for col in ws.columns:
-        max_length = 0
-        column = col[0].column_letter  # Get the column letter (e.g., "A", "B", etc.)
-        for cell in col:
-            try:
-                # Calculate the length of the cell content
-                if len(str(cell.value)) > max_length:
-                    max_length = len(str(cell.value))
-            except:
-                pass
-        # Set the column width to fit the longest content, add padding
-        adjusted_width = (max_length + 2) * 1.2  # Add some padding
-        ws.column_dimensions[column].width = adjusted_width
+	for cell in ws[1]:
+		cell.fill = green_fill
+	# Auto-fit column widths
+	for col in ws.columns:
+		max_length = 0
+		column = col[0].column_letter  # Get the column letter (e.g., "A", "B", etc.)
+		for cell in col:
+			try:
+				# Calculate the length of the cell content
+				if len(str(cell.value)) > max_length:
+					max_length = len(str(cell.value))
+			except:
+				pass
+		# Set the column width to fit the longest content, add padding
+		adjusted_width = (max_length + 2) * 1.2  # Add some padding
+		ws.column_dimensions[column].width = adjusted_width
 
-    # Save the workbook to a BytesIO object
-    xlsx_file = BytesIO()
-    wb.save(xlsx_file)
-    return xlsx_file
+	# Save the workbook to a BytesIO object
+	xlsx_file = BytesIO()
+	wb.save(xlsx_file)
+	return xlsx_file
 
 
 
@@ -414,23 +414,23 @@ def make_xlsx(data, sheet_name, wb=None, column_widths=None):
 def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=True):
 	"""
 	args = {
-	        "item_code": "",
-	        "warehouse": None,
-	        "customer": "",
-	        "conversion_rate": 1.0,
-	        "selling_price_list": None,
-	        "price_list_currency": None,
-	        "plc_conversion_rate": 1.0,
-	        "doctype": "",
-	        "name": "",
-	        "supplier": None,
-	        "transaction_date": None,
-	        "conversion_rate": 1.0,
-	        "buying_price_list": None,
-	        "is_subcontracted": 0/1,
-	        "ignore_pricing_rule": 0/1
-	        "project": ""
-	        "set_warehouse": ""
+			"item_code": "",
+			"warehouse": None,
+			"customer": "",
+			"conversion_rate": 1.0,
+			"selling_price_list": None,
+			"price_list_currency": None,
+			"plc_conversion_rate": 1.0,
+			"doctype": "",
+			"name": "",
+			"supplier": None,
+			"transaction_date": None,
+			"conversion_rate": 1.0,
+			"buying_price_list": None,
+			"is_subcontracted": 0/1,
+			"ignore_pricing_rule": 0/1
+			"project": ""
+			"set_warehouse": ""
 	}
 	"""
 	from erpnext.stock.get_item_details import (process_args, process_string_args, get_basic_details, validate_item_details, get_item_tax_template, get_item_tax_map, get_party_item_code, set_valuation_rate, update_party_blanket_order, get_price_list_rate, get_pos_profile_item_details, update_bin_details, get_pricing_rule_for_item, update_stock, get_default_bom, get_gross_profit, remove_standard_fields)
@@ -512,3 +512,40 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 	out = remove_standard_fields(out)
 	return out
+
+# Payment Reconciliation
+def reconcile_payments(company, account, customer):
+	outstanding_documents = frappe.call('erpnext.accounts.doctype.payment_entry.payment_entry.get_outstanding_reference_documents', args = {'party_type':'Customer', 'party':customer, 'party_account':account}) or 0
+	flag = False
+	if outstanding_documents:
+		for i in outstanding_documents:
+			if i.outstanding_amount > 0:
+				flag = True
+				break
+	if flag:
+		unallocated_amount = frappe.db.get_value("Payment Entry", [["party", "=", customer], ["unallocated_amount", ">", 0], ["docstatus", "=", 1]], "sum(unallocated_amount)") or 0
+		credit_amount = frappe.db.get_value("Journal Entry Account", [["party", "=", customer], ["credit", ">", 0], ["reference_name", "=", None], ["docstatus", "=", 1]], "sum(credit)") or 0
+		cn_amount = frappe.db.get_value("Sales Invoice", [["customer", "=", customer], ["outstanding_amount", "<", 0], ["is_return", "=", 1], ["docstatus", "=", 1]], "sum(outstanding_amount)") or 0
+		if unallocated_amount or credit_amount or cn_amount:
+			_cancel_old_reconciliations(company, account, customer)
+			_create_reconciliation_entry(company, account, customer)
+
+def _cancel_old_reconciliations(company, account, customer):
+	reconciliations = frappe.get_all("Process Payment Reconciliation", filters={"party": customer, "company": company, "receivable_payable_account": account, "docstatus": 1}, fields=["name"])
+	for reconciliation in reconciliations:
+		try:
+			doc = frappe.get_doc("Process Payment Reconciliation", reconciliation.name)
+			doc.cancel()
+		except Exception as e:
+			frappe.log_error("Error occurred while canceling reconciliation: {0}".format(str(e)))
+
+def _create_reconciliation_entry(company, account, customer):
+	reconciliation = frappe.get_doc({
+		"doctype": "Process Payment Reconciliation",
+		"party_type": "Customer",
+		"party" : customer,
+		"company": company,
+		"receivable_payable_account": account,
+		"default_advance_account": account
+	}).insert(ignore_permissions=True)
+	reconciliation.submit()

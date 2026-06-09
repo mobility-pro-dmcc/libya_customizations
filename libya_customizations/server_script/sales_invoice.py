@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from frappe import json
+from libya_customizations.utils import reconcile_payments as reconcile_payments_entries
 
 def get_default_company():
 	default_company = frappe.db.get_single_value("Global Defaults", "default_company")
@@ -267,32 +268,7 @@ def create_write_off(doc, method):
 		journal_entry.submit()
 
 def reconcile_payments(doc, method):
-	company = doc.company
-	account = doc.debit_to
-	customer = doc.customer
-	outstanding_documents = frappe.call('erpnext.accounts.doctype.payment_entry.payment_entry.get_outstanding_reference_documents', args = {'party_type':'Customer', 'party':customer, 'party_account':account}) or 0
-	flag = False
-	if outstanding_documents:
-		total = 0
-		for i in outstanding_documents:
-			if i.outstanding_amount > 0:
-				flag = True
-				break
-	if flag:
-		unallocated_amount = frappe.db.get_value("Payment Entry", [["party", "=", customer], ["unallocated_amount", ">", 0], ["docstatus", "=", 1]], "sum(unallocated_amount)") or 0
-		credit_amount = frappe.db.get_value("Journal Entry Account", [["party", "=", customer], ["credit", ">", 0], ["reference_name", "=", None], ["docstatus", "=", 1]], "sum(credit)") or 0
-		cn_amount = frappe.db.get_value("Sales Invoice", [["customer", "=", customer], ["outstanding_amount", "<", 0], ["is_return", "=", 1], ["docstatus", "=", 1]], "sum(outstanding_amount)") or 0
-		if unallocated_amount or credit_amount or cn_amount:
-			reconciliation = frappe.get_doc({
-				"doctype": "Process Payment Reconciliation",
-				"party_type": "Customer",
-				"party" : customer,
-				"company": company,
-				"receivable_payable_account": account,
-				"default_advance_account": account
-			}).insert(ignore_permissions=True)
-			reconciliation.save(ignore_permissions=True)
-			reconciliation.submit()
+	reconcile_payments_entries(doc.company, doc.debit_to, doc.customer)
 
 def reconcile_everything(doc, method):
 	frappe.call("erpnext.accounts.doctype.process_payment_reconciliation.process_payment_reconciliation.trigger_reconciliation_for_queued_docs")
