@@ -547,5 +547,6 @@ def _create_reconciliation_entry(company, account, customer):
 		"company": company,
 		"receivable_payable_account": account,
 		"default_advance_account": account
-	}).insert(ignore_permissions=True)
+	})
+	reconciliation.flags.ignore_permissions = True
 	reconciliation.submit()
