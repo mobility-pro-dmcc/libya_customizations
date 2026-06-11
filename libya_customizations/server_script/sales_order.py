@@ -410,7 +410,7 @@ def before_submit_sales_order(doc, method):
                             frappe.throw(msg=_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Price List Rate</b> ({2})").format('{:0.2f}'.format(row['rate']), row['item_name'], '{:0.2f}'.format(price_list_rate)))
 
 def validate_item_prices_after_submit(doc, method):
-    rows = [{"name": row.name, "rate": row.net_rate, "valuation_rate": row.valuation_rate, "item_code": row.item_code, "item_name": row.item_name} for row in doc.items]
+    rows = [{"name": row.name, "rate": row.net_rate, "valuation_rate": row.valuation_rate, "item_code": row.item_code, "item_name": row.item_name, "production_year": row.production_year} for row in doc.items]
     bypass_role = frappe.db.get_value("Company", get_default_company(), "role_bypass_price_list_validation")
     # if (
     # 	    not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "in", "Chief Sales Officer", bypass_role]])
