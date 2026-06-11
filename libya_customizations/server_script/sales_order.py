@@ -411,25 +411,20 @@ def before_submit_sales_order(doc, method):
 
 def validate_item_prices_after_submit(doc, method):
     rows = [{"name": row.name, "rate": row.net_rate, "valuation_rate": row.valuation_rate, "item_code": row.item_code, "item_name": row.item_name, "production_year": row.production_year} for row in doc.items]
-    bypass_role = frappe.db.get_value("Company", get_default_company(), "role_bypass_price_list_validation")
-    # if (
-    # 	    not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "in", "Chief Sales Officer", bypass_role]])
-    # 	):
-    roles = ["Chief Sales Officer"]
-    if bypass_role:
-        roles.append(bypass_role)
-        has_role = frappe.db.get_value("Has Role", {
-        "parent": frappe.session.user,
-        "role": ["in", roles]
-        })
+    if  (
+        not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "=", "Chief Sales Officer"]])
+        ):
         for row in rows:
-            if row['rate'] < row['valuation_rate'] and frappe.db.get_value("Company", get_default_company(), "validate_selling_price_so") and not has_role:
+            if row['rate'] < row['valuation_rate'] and frappe.db.get_value("Company", get_default_company(), "validate_selling_price_so"):
                 frappe.throw(_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Valuation Rate</b>").format('{:0.2f}'.format(row['rate']), row['item_name']))
             elif not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "in", ["Sales Supervisor", "Chief Sales Officer"]]]):
                 for row in rows:
-                    price_list_rate = frappe.db.get_value("Item Price", [["item_code","=", row['item_code']], ["production_year","=", row['production_year']], ["price_list", "=", doc.selling_price_list]], "price_list_rate")
+                    if not row.get("production_year"):
+                        price_list_rate = frappe.db.get_value("Item Price", [["item_code","=", row['item_code']], ["price_list", "=", doc.selling_price_list]], "price_list_rate")
+                    else:
+                         price_list_rate = frappe.db.get_value("Item Price", [["item_code","=", row['item_code']], ["production_year","=", row['production_year']], ["price_list", "=", doc.selling_price_list]], "price_list_rate")
                     if row['rate'] < price_list_rate:
-                        frappe.throw(_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Price List Rate</b> ({2})").format('{:0.2f}'.format(row['rate']), row['item_name'], '{:0.2f}'.format(price_list_rate)))
+                            frappe.throw(msg=_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Price List Rate</b> ({2})").format('{:0.2f}'.format(row['rate']), row['item_name'], '{:0.2f}'.format(price_list_rate)))
 
 def _update_available_quantities(doc):
     for item in doc.items:
