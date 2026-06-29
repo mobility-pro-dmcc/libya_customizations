@@ -1,6 +1,7 @@
 import frappe
 from frappe import _
 from libya_customizations.server_script.stock_ledger_entry import update_item_price
+from libya_customizations.utils import check_roles_included
 
 def get_default_company():
     default_company = frappe.db.get_single_value("Global Defaults", "default_company")
@@ -12,6 +13,47 @@ def get_default_company():
         company = frappe.get_all("Company", fields=["name"], limit=1)
         return company[0].name if company else None
 
+def get_items_with_prices(doc):
+    rows = []
+    item_codes = []
+    prod_years = []
+
+    for item in doc.items:
+        item_codes.append(item.item_code)
+        if item.production_year:
+            prod_years.append(item.production_year)
+
+    if item_codes:
+        query = """
+            SELECT item_code, production_year, price_list_rate 
+            FROM `tabItem Price` 
+            WHERE price_list = %s 
+            AND item_code IN %s
+        """
+        
+        prices = frappe.db.sql(query, (doc.selling_price_list, item_codes), as_dict=1)
+        
+        price_map = {}
+        for p in prices:
+            key = (p.get("item_code"), p.get("production_year"))
+            price_map[key] = p.get("price_list_rate")
+
+    for item in doc.items:
+        lookup_key = (item.item_code, item.production_year if item.production_year else None)
+        
+        price_list_rate = price_map.get(lookup_key, 0)
+        
+        row_data = {
+            "name": item.name, 
+            "rate": item.net_rate, 
+            "valuation_rate": item.valuation_rate, 
+            "item_code": item.item_code, 
+            "item_name": item.item_name, 
+            "production_year": item.production_year,
+            "price_list_rate": price_list_rate
+        }
+        rows.append(frappe._dict(row_data))
+    return rows
 
 def after_submit_sales_order(doc, method):
     flag = False
@@ -163,7 +205,7 @@ def after_submit_sales_order(doc, method):
                 TRUE
         """, as_dict= True)
         balances = balances[0]
-        if doc.reservation_status == "Reserve against Future Receipts" and frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "=", "Chief Sales Officer"]]):
+        if doc.reservation_status == "Reserve against Future Receipts" and check_roles_included("reserve_against_future_receipts"):
             if balances.future_available_qty < 0:
                 frappe.throw(_("Available Qty of Item <b>{0}</b> is not enough. The shortage qty is <b>{1}</b>").format(row.item_name, int(-balances.future_available_qty)))
                 flag = True
@@ -178,7 +220,7 @@ def before_save_sales_order(doc, method):
     doc = frappe.get_doc(doc)
     if  (
             doc.reservation_status == "Reserve against Future Receipts"
-            and not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "in", ["Chief Sales Officer", "Sales Assistant Manager"]]])
+            and not check_roles_included("reserve_against_future_receipts")
         ):
         frappe.msgprint(_("You do not have the authority to choose <b>Reserve against Future Receipts</b>"), title=_('Error'), indicator='red')
         raise frappe.ValidationError
@@ -194,7 +236,7 @@ def validate_before_submit_sales_order(doc, method):
     if payment_terms_template:
         accounts_settings = frappe.get_single("Accounts Settings")
         bypass_overdue_check = frappe.db.get_value('Customer', doc.customer, 'bypass_overdue_check')
-        user_has_cso = frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "=", "Chief Sales Officer"]])
+        user_has_cso = check_roles_included("bypass_overdue_check")
         credit_days = frappe.db.get_value('Payment Terms Template Detail', {'parent': payment_terms_template}, 'credit_days')
         outstanding = frappe.db.get_value('Sales Invoice', {'docstatus': 1, 'customer': doc.customer, 'posting_date': ['<', frappe.utils.add_days(frappe.utils.nowdate(), - credit_days)]}, 'sum(outstanding_amount)')
         outstanding = outstanding if outstanding else 0
@@ -390,41 +432,19 @@ def create_dn_from_so(doc):
         # frappe.msgprint(_(f"Delivery Note <b>{dn_name}</b> has been created against Sales Order <b>{so_name}</b>"), title=_('Error'), indicator='red')
     return delivery_note.name
 
-
-
+def validate_valuation_rate_price_list(doc):
+    rows = get_items_with_prices(doc)
+    for row in rows:
+        if row.rate < row.valuation_rate and frappe.db.get_value("Company", get_default_company(), "validate_selling_price_so") and check_roles_included("bypass_valuation_rate_check"):
+            frappe.throw(_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Valuation Rate</b>").format('{:0.2f}'.format(row['rate']), row['item_name']))
+        if row.rate < row.price_list_rate and not check_roles_included("bypass_price_list_check"):
+            frappe.throw(msg=_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Price List Rate</b> ({2})").format('{:0.2f}'.format(row['rate']), row['item_name'], '{:0.2f}'.format(price_list_rate)))
 def before_submit_sales_order(doc, method):
-    rows = [{"name": row.name, "rate": row.net_rate, "valuation_rate": row.valuation_rate, "item_code": row.item_code, "item_name": row.item_name, "production_year": row.production_year} for row in doc.items]
-    if  (
-        not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "=", "Chief Sales Officer"]])
-        ):
-        for row in rows:
-            if row['rate'] < row['valuation_rate'] and frappe.db.get_value("Company", get_default_company(), "validate_selling_price_so"):
-                frappe.throw(_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Valuation Rate</b>").format('{:0.2f}'.format(row['rate']), row['item_name']))
-            elif not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "in", ["Sales Supervisor", "Chief Sales Officer"]]]):
-                for row in rows:
-                    if not row.get("production_year"):
-                        price_list_rate = frappe.db.get_value("Item Price", [["item_code","=", row['item_code']], ["price_list", "=", doc.selling_price_list]], "price_list_rate")
-                    else:
-                         price_list_rate = frappe.db.get_value("Item Price", [["item_code","=", row['item_code']], ["production_year","=", row['production_year']], ["price_list", "=", doc.selling_price_list]], "price_list_rate")
-                    if row['rate'] < price_list_rate:
-                            frappe.throw(msg=_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Price List Rate</b> ({2})").format('{:0.2f}'.format(row['rate']), row['item_name'], '{:0.2f}'.format(price_list_rate)))
+    validate_valuation_rate_price_list(doc)
+
 
 def validate_item_prices_after_submit(doc, method):
-    rows = [{"name": row.name, "rate": row.net_rate, "valuation_rate": row.valuation_rate, "item_code": row.item_code, "item_name": row.item_name, "production_year": row.production_year} for row in doc.items]
-    if  (
-        not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "=", "Chief Sales Officer"]])
-        ):
-        for row in rows:
-            if row['rate'] < row['valuation_rate'] and frappe.db.get_value("Company", get_default_company(), "validate_selling_price_so"):
-                frappe.throw(_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Valuation Rate</b>").format('{:0.2f}'.format(row['rate']), row['item_name']))
-            elif not frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "in", ["Sales Supervisor", "Chief Sales Officer"]]]):
-                for row in rows:
-                    if not row.get("production_year"):
-                        price_list_rate = frappe.db.get_value("Item Price", [["item_code","=", row['item_code']], ["price_list", "=", doc.selling_price_list]], "price_list_rate")
-                    else:
-                         price_list_rate = frappe.db.get_value("Item Price", [["item_code","=", row['item_code']], ["production_year","=", row['production_year']], ["price_list", "=", doc.selling_price_list]], "price_list_rate")
-                    if row['rate'] < price_list_rate:
-                            frappe.throw(msg=_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Price List Rate</b> ({2})").format('{:0.2f}'.format(row['rate']), row['item_name'], '{:0.2f}'.format(price_list_rate)))
+    validate_valuation_rate_price_list(doc)
 
 def _update_available_quantities(doc):
     for item in doc.items:

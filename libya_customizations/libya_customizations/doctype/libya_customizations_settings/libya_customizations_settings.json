@@ -1,0 +1,88 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-25 09:01:59.060589",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "roles_tab",
+  "bulk_edit_prices",
+  "bypass_overdue_check",
+  "column_break_edgu",
+  "reserve_against_future_receipts",
+  "bypass_valuation_rate_check",
+  "bypass_price_list_check"
+ ],
+ "fields": [
+  {
+   "fieldname": "roles_tab",
+   "fieldtype": "Tab Break",
+   "label": "Roles"
+  },
+  {
+   "description": "Default role will be \"Chief Sales Officer\" if empty",
+   "fieldname": "bulk_edit_prices",
+   "fieldtype": "Table MultiSelect",
+   "label": "Bulk Edit Prices Roles",
+   "options": "Libya Customizations Settings Roles"
+  },
+  {
+   "fieldname": "column_break_edgu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Default role will be \"Chief Sales Officer\" if empty",
+   "fieldname": "bypass_overdue_check",
+   "fieldtype": "Table MultiSelect",
+   "label": "Roles to Bypass Overdue Check",
+   "options": "Libya Customizations Settings Roles"
+  },
+  {
+   "description": "Default role will be \"Chief Sales Officer\" if empty",
+   "fieldname": "reserve_against_future_receipts",
+   "fieldtype": "Table MultiSelect",
+   "label": "Reserve against Future Receipts Roles",
+   "options": "Libya Customizations Settings Roles"
+  },
+  {
+   "description": "Roles that can submit sales order with item that has rate less than valuation rate. <br>\nDefault role will be \"Chief Sales Officer\" if empty",
+   "fieldname": "bypass_valuation_rate_check",
+   "fieldtype": "Table MultiSelect",
+   "label": "Bypass Valuation Rate Check Roles",
+   "options": "Libya Customizations Settings Roles"
+  },
+  {
+   "description": "Roles that can submit sales order with item that has rate less than valuation rate. <br>\nDefault role will be [\"Chief Sales Officer\", \"Sales Supervisor\"] if empty",
+   "fieldname": "bypass_price_list_check",
+   "fieldtype": "Table MultiSelect",
+   "label": "Bypass Price list Roles",
+   "options": "Libya Customizations Settings Roles"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-25 14:11:49.502293",
+ "modified_by": "Administrator",
+ "module": "Libya Customizations",
+ "name": "Libya Customizations Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

@@ -4,7 +4,10 @@
 import frappe
 from frappe.model.document import Document
 from frappe import _
+from frappe.utils import flt
+from libya_customizations.utils import update_remarks
 from libya_customizations.utils import reconcile_payments as reconcile_payments_entries
+from erpnext.accounts.doctype.process_payment_reconciliation.process_payment_reconciliation import trigger_reconciliation_for_queued_docs
 
 
 class ClearingVoucher(Document):
@@ -12,11 +15,43 @@ class ClearingVoucher(Document):
 		self.update_status("Submitted")
 	def validate(self):
 		self.update_status("Draft")
-		if self.base_deducted_amount != self.base_added_amount:
+		self.validate_amounts()
+
+	def on_submit(self):
+		self.create_journal_entry()
+		update_remarks(self.name, 'Journal Entry', 'remark', self.remark)
+		self.update_status("Submitted")
+		if self.from_party_type == "Customer" or self.to_party_type == "Customer":
+			self.reconcile_everything()
+
+	def on_update_after_submit(self):
+		update_remarks(self.name, 'Journal Entry', 'remark', self.remark)
+
+	def on_trash(self):
+		doctype = 'Journal Entry'
+		lst = frappe.db.get_list(doctype, filters={'custom_voucher_no': self.name}, ignore_permissions=True)
+		for dn in lst:
+			frappe.delete_doc(doctype, dn.name, force=True, ignore_permissions=True)
+
+	def on_cancel(self):
+		self.update_status("Cancelled")
+
+	def before_cancel(self):
+		doctype = 'Journal Entry'
+		lst = frappe.db.get_list(doctype, filters={'custom_voucher_no': self.name}, ignore_permissions=True)
+		for dn in lst:
+			d = frappe.get_doc(doctype, dn.name)
+			if d.docstatus == 1:
+				d.flags.ignore_permissions = True
+				d.cancel()
+		self.update_status("Cancelled")
+
+	def validate_amounts(self):
+		if flt(self.base_deducted_amount, self.precision("base_deducted_amount")) != flt(self.base_added_amount, self.precision("base_added_amount")):
 			frappe.msgprint(msg=_(f'Deducted Amount in Company Currency not equal to Added Amount in Company Currency'), title=_('Mismatch'), indicator='red')
 			raise frappe.ValidationError
-		
-	def on_submit(self):
+
+	def create_journal_entry(self):
 		accounts = []
 		accounts.append({
 			'account': self.from_account,
@@ -47,39 +82,9 @@ class ClearingVoucher(Document):
 		})
 		journal_entry.insert(ignore_permissions=True)
 		journal_entry.submit()
-	
-		self.on_update_after_submit()
-		self.update_status("Submitted")
-		if self.from_party_type == "Customer" or self.to_party_type == "Customer":
-			self.reconcile_everything()
-
-	def on_update_after_submit(self):
-		doctype = 'Journal Entry'
-		affected_field = "remark"
-		linked_doc = frappe.db.get_value(doctype, {"custom_voucher_no": self.name}, "name")
-		if linked_doc:
-			frappe.db.set_value("GL Entry", {"voucher_no": linked_doc}, "remarks", self.remark)
-			frappe.db.set_value(doctype, linked_doc, affected_field, self.remark)
-
-	def on_trash(self):
-		doctype = 'Journal Entry'
-		lst = frappe.db.get_list(doctype, filters={'custom_voucher_no': self.name}, ignore_permissions=True)
-		for dn in lst:
-			frappe.delete_doc(doctype, dn.name, force=True)
 
 	def update_status(self, status):
 		self.set("status", status)
-	def on_cancel(self):
-		self.update_status("Cancelled")
-
-	def before_cancel(self):
-		doctype = 'Journal Entry'
-		lst = frappe.db.get_list(doctype, filters={'custom_voucher_no': self.name}, ignore_permissions=True)
-		for dn in lst:
-			d = frappe.get_doc(doctype, dn.name)
-			if d.docstatus == 1:
-				d.cancel()
-		self.update_status("Cancelled")
 
 	def reconcile_payments(self):
 		if 'Customer' in [self.from_party_type, self.to_party_type]:
@@ -106,4 +111,5 @@ class ClearingVoucher(Document):
 
 	def reconcile_everything(self):
 		self.reconcile_payments()
-		frappe.call("erpnext.accounts.doctype.process_payment_reconciliation.process_payment_reconciliation.trigger_reconciliation_for_queued_docs")
+		trigger_reconciliation_for_queued_docs()
+		

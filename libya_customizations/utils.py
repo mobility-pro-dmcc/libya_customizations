@@ -8,7 +8,9 @@ from frappe.utils import (flt, get_link_to_form, getdate)
 from erpnext.buying.utils import update_last_purchase_rate
 from erpnext.stock.doctype.packed_item.packed_item import make_packing_list
 from erpnext.stock.get_item_details import get_conversion_factor
-
+from erpnext.accounts.doctype.payment_entry.payment_entry import get_outstanding_reference_documents
+from erpnext.accounts.doctype.unreconcile_payment.unreconcile_payment import get_linked_payments_for_doc
+from erpnext.accounts.doctype.unreconcile_payment.unreconcile_payment import create_unreconcile_doc_for_selection
 
 @frappe.whitelist()
 def get_linked_document(linked_doctype, docname, linked_field, field):
@@ -514,8 +516,8 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 	return out
 
 # Payment Reconciliation
-def reconcile_payments(company, account, customer):
-	outstanding_documents = frappe.call('erpnext.accounts.doctype.payment_entry.payment_entry.get_outstanding_reference_documents', args = {'party_type':'Customer', 'party':customer, 'party_account':account}) or 0
+def reconcile_payments(company, account, customer):	
+	outstanding_documents = get_outstanding_reference_documents(party_type='Customer', party=customer, party_account=account) or 0
 	flag = False
 	if outstanding_documents:
 		for i in outstanding_documents:
@@ -550,3 +552,64 @@ def _create_reconciliation_entry(company, account, customer):
 	})
 	reconciliation.flags.ignore_permissions = True
 	reconciliation.submit()
+
+def update_remarks(doc_name, linked_doctype, affected_field, remarks):
+	linked_doc = frappe.db.get_value(linked_doctype, {"custom_voucher_no": doc_name}, "name")
+	if linked_doc:
+		frappe.db.set_value("GL Entry", {"voucher_no": linked_doc}, "remarks", remarks)
+		frappe.db.set_value(linked_doctype, linked_doc, affected_field, remarks)
+
+# Roles Doctype
+@frappe.whitelist()
+def get_default_roles(role_type):
+	return frappe.get_all("Libya Customizations Settings Roles", filters={"parentfield": role_type}, fields=["role"], pluck="role")
+def check_roles_included(role_type):
+	roles = get_default_roles(role_type)
+	if not roles:
+		roles = get_default_roles_if_empty(role_type)
+	user_roles = frappe.get_roles()
+	return any(role in user_roles for role in roles)
+def get_default_roles_if_empty(role_type):
+	roles = {
+		"bulk_edit_prices": ["Chief Sales Officer"],
+		"bypass_overdue_check": ["Chief Sales Officer"],
+		"reserve_against_future_receipts": ["Chief Sales Officer"],
+		"bypass_valuation_rate_check": ["Chief Sales Officer"],
+		"bypass_price_list_check": ["Chief Sales Officer", "Sales Supervisor"]
+	}
+	return roles.get(role_type, [])
+
+def build_unreconcile_selection_map(selections, doctype, doc_name):
+    selection_map = []
+
+    if doctype in ["Sales Invoice", "Purchase Invoice"]:
+        selection_map = [
+            {
+                "company": elem.get("company"),
+                "voucher_type": elem.get("reference_doctype"),
+                "voucher_no": elem.get("reference_name"),
+                "against_voucher_type": doctype,
+                "against_voucher_no": doc_name,
+            }
+            for elem in selections
+        ]
+        
+    elif doctype in ["Payment Entry", "Journal Entry"]:
+        selection_map = [
+            {
+                "company": elem.get("company"),
+                "voucher_type": doctype,
+                "voucher_no": doc_name,
+                "against_voucher_type": elem.get("reference_doctype"),
+                "against_voucher_no": elem.get("reference_name"),
+            }
+            for elem in selections
+        ]
+
+    return selection_map
+
+def unreconcile_payments(doc):
+	linked_payments = get_linked_payments_for_doc(doc.company, doc.doctype, doc.name)
+	selection_map = build_unreconcile_selection_map(linked_payments, doc.doctype, doc.name)
+	create_unreconcile_doc_for_selection(json.dumps(selection_map))
+	

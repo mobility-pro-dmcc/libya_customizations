@@ -1,14 +1,5 @@
 frappe.listview_settings['Item Price'] = {
-    onload: function (listview) {
-        // // 1. Update stock valuation rate
-        // frappe.call({
-        //     method: "libya_customizations.server_script.item_price.update_stock_valuation_rate",
-        //     freeze: true,
-        //     callback: function(r) { 
-        //         listview.refresh();
-        //     }
-        // });
-        
+    onload: async function (listview) {        
         // 2. Add the "In-Stock Items" button
         listview.page.add_inner_button(__('In-Stock Items'), function () {
             listview.filter_area.clear();
@@ -71,7 +62,7 @@ frappe.listview_settings['Item Price'] = {
         }, "Filters");
 
         // 4. Role-based buttons
-        if (frappe.user_roles.includes('Chief Sales Officer')) {
+        if (await libya_customizations.utils.check_roles_included("bulk_edit_prices")) {
             // 4.1 Increase Item Prices
             listview.page.add_inner_button(__('Increase Item Prices'), function () {
                 let dialog = new frappe.ui.Dialog({

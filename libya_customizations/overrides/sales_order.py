@@ -3,6 +3,7 @@ import json
 from frappe import _
 from erpnext.selling.doctype.sales_order.sales_order import SalesOrder
 from libya_customizations.server_script.sales_order import get_customer_info
+from libya_customizations.utils import check_roles_included
 
 class CustomSalesOrder(SalesOrder):
     def update_status(self, *args, **kwargs):
@@ -17,7 +18,7 @@ class CustomSalesOrder(SalesOrder):
         payment_terms_template = frappe.db.get_value('Customer', self.customer, 'payment_terms')
         if payment_terms_template:
             bypass_overdue_check = frappe.db.get_value('Customer', self.customer, 'bypass_overdue_check')
-            user_has_cso = frappe.db.get_value("Has Role", [["parent", "=", frappe.session.user], ['role', "=", "Chief Sales Officer"]])
+            user_has_cso = check_roles_included("bulk_edit_prices")
             credit_days = frappe.db.get_value('Payment Terms Template Detail', {'parent': payment_terms_template}, 'credit_days')
             outstanding = frappe.db.get_value('Sales Invoice', {'docstatus': 1, 'customer': self.customer, 'posting_date': ['<', frappe.utils.add_days(frappe.utils.nowdate(), - credit_days)]}, 'sum(outstanding_amount)')
             outstanding = outstanding if outstanding else 0
