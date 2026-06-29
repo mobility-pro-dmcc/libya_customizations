@@ -4,6 +4,8 @@
 import frappe
 from frappe.model.document import Document
 from frappe import _
+from libya_customizations.utils import unreconcile_payments
+
 
 class TransferVoucher(Document):
 	def validate(self):
@@ -90,6 +92,7 @@ class TransferVoucher(Document):
 			frappe.delete_doc(doctype, dn.name, force=True)
 
 	def before_cancel(self):
+		unreconcile_payments(self)
 		doctype = "Payment Entry"
 		lst = frappe.db.get_list(doctype, filters={'custom_voucher_no': self.name}, ignore_permissions=True)
 		for dn in lst:

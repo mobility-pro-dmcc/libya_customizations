@@ -5,7 +5,7 @@ import frappe
 from frappe.model.document import Document
 from frappe import _
 from libya_customizations.utils import reconcile_payments as reconcile_payments_entries
-
+from libya_customizations.utils import unreconcile_payments
 
 
 class PaymentVoucher(Document):
@@ -105,6 +105,7 @@ class PaymentVoucher(Document):
 			frappe.delete_doc(doctype, dn.name, force=True)
 
 	def before_cancel(self):
+		unreconcile_payments(self)
 		doctype = 'Journal Entry'
 		if self.payment_to == "Supplier":
 			doctype = "Payment Entry"

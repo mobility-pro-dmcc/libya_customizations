@@ -608,8 +608,8 @@ def build_unreconcile_selection_map(selections, doctype, doc_name):
 
     return selection_map
 
-def unreconcile_payments(doc):
-	linked_payments = get_linked_payments_for_doc(doc.company, doc.doctype, doc.name)
-	selection_map = build_unreconcile_selection_map(linked_payments, doc.doctype, doc.name)
-	create_unreconcile_doc_for_selection(json.dumps(selection_map))
-	
+def unreconcile_payments(voucher):
+	for doc in frappe.get_all("Payment Entry", {"custom_voucher_no": voucher.name}, ["company", "name"]):
+		linked_payments = get_linked_payments_for_doc(doc.company, "Payment Entry", doc.name)
+		selection_map = build_unreconcile_selection_map(linked_payments, "Payment Entry", doc.name)
+		create_unreconcile_doc_for_selection(json.dumps(selection_map))
