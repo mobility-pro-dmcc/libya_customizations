@@ -517,7 +517,7 @@ def get_item_details(args, doc=None, for_validate=False, overwrite_warehouse=Tru
 
 # Payment Reconciliation
 def reconcile_payments(company, account, customer):	
-	outstanding_documents = get_outstanding_reference_documents(party_type='Customer', party=customer, party_account=account) or 0
+	outstanding_documents = get_outstanding_reference_documents({"party_type":'Customer', "party":customer, "party_account":account}) or 0
 	flag = False
 	if outstanding_documents:
 		for i in outstanding_documents:
