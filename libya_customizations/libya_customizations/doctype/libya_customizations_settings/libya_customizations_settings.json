@@ -1,0 +1,56 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2026-06-25 08:45:24.515068",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "roles_tab",
+  "bulk_edit_prices",
+  "column_break_edgu"
+ ],
+ "fields": [
+  {
+   "fieldname": "roles_tab",
+   "fieldtype": "Tab Break",
+   "label": "Roles"
+  },
+  {
+   "fieldname": "column_break_edgu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Default role will be \"Chief Sales Officer\"",
+   "fieldname": "bulk_edit_prices",
+   "fieldtype": "Table MultiSelect",
+   "label": "Bulk Edit Prices Role",
+   "options": "Libya Customizations Settings Roles"
+  }
+ ],
+ "grid_page_length": 50,
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2026-06-25 08:55:27.650773",
+ "modified_by": "Administrator",
+ "module": "Libya Customizations",
+ "name": "Libya Customizations Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "rows_threshold_for_grid_search": 20,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
