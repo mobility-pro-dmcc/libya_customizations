@@ -435,7 +435,7 @@ def create_dn_from_so(doc):
 def validate_valuation_rate_price_list(doc):
     rows = get_items_with_prices(doc)
     for row in rows:
-        if row.rate < row.valuation_rate and frappe.db.get_value("Company", get_default_company(), "validate_selling_price_so") and check_roles_included("bypass_valuation_rate_check"):
+        if row.rate < row.valuation_rate and frappe.db.get_value("Company", get_default_company(), "validate_selling_price_so") and not check_roles_included("bypass_valuation_rate_check"):
             frappe.throw(_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Valuation Rate</b>").format('{:0.2f}'.format(row['rate']), row['item_name']))
         if row.rate < row.price_list_rate and not check_roles_included("bypass_price_list_check"):
             frappe.throw(msg=_("<b>Net Rate</b> ({0}) of Item <b>{1}</b> is less than <b>Price List Rate</b> ({2})").format('{:0.2f}'.format(row['rate']), row['item_name'], '{:0.2f}'.format(price_list_rate)))

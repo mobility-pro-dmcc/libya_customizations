@@ -4,6 +4,7 @@
 import frappe
 from frappe.model.document import Document
 from frappe import _
+from frappe.utils import flt
 from libya_customizations.utils import unreconcile_payments
 
 
@@ -11,7 +12,7 @@ class TransferVoucher(Document):
 	def validate(self):
 		self.update_status("Draft")
 
-		if self.base_paid_amount != self.base_received_amount:
+		if flt(self.base_paid_amount, self.precision("base_paid_amount")) != flt(self.base_received_amount, self.precision("base_received_amount")):
 			frappe.msgprint(msg=_(f'Paid Amount in Company Currency not equal to Received Amount in Company Currency'), title=_('Mismatch'), indicator='red')
 			raise frappe.ValidationError
 	

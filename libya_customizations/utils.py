@@ -533,7 +533,7 @@ def reconcile_payments(company, account, customer):
 			_create_reconciliation_entry(company, account, customer)
 
 def _cancel_old_reconciliations(company, account, customer):
-	reconciliations = frappe.get_all("Process Payment Reconciliation", filters={"party": customer, "company": company, "receivable_payable_account": account, "docstatus": 1}, fields=["name"])
+	reconciliations = frappe.get_all("Process Payment Reconciliation", filters={"party": customer, "company": company, "receivable_payable_account": account, "docstatus": 1, "status": ["!=", "Completed"]}, fields=["name"])
 	for reconciliation in reconciliations:
 		try:
 			doc = frappe.get_doc("Process Payment Reconciliation", reconciliation.name)
