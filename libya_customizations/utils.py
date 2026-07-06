@@ -563,19 +563,22 @@ def update_remarks(doc_name, linked_doctype, affected_field, remarks):
 @frappe.whitelist()
 def get_default_roles(role_type):
 	return frappe.get_all("Libya Customizations Settings Roles", filters={"parentfield": role_type}, fields=["role"], pluck="role")
+@frappe.whitelist()
 def check_roles_included(role_type):
 	roles = get_default_roles(role_type)
 	if not roles:
 		roles = get_default_roles_if_empty(role_type)
 	user_roles = frappe.get_roles()
 	return any(role in user_roles for role in roles)
+@frappe.whitelist()
 def get_default_roles_if_empty(role_type):
 	roles = {
 		"bulk_edit_prices": ["Chief Sales Officer"],
 		"bypass_overdue_check": ["Chief Sales Officer"],
 		"reserve_against_future_receipts": ["Chief Sales Officer"],
 		"bypass_valuation_rate_check": ["Chief Sales Officer"],
-		"bypass_price_list_check": ["Chief Sales Officer", "Sales Supervisor"]
+		"bypass_price_list_check": ["Chief Sales Officer", "Sales Supervisor"],
+		"show_valuation_rate": ["Chief Sales Officer"],
 	}
 	return roles.get(role_type, [])
 

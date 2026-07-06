@@ -11,17 +11,22 @@ class Utils {
         return roles.message;
     }
     async check_roles_included(role_type) {
-        let roles = await this.get_default_roles(role_type);
-        if (!roles || roles.length === 0) {
-            roles = this.get_default_roles_if_empty(role_type);
-        }
-        return roles.some(role => frappe.user_roles.includes(role));
+        let check_roles = await frappe.call({
+            method: "libya_customizations.utils.check_roles_included",
+            args: {
+                role_type: role_type
+            }
+        });
+        return check_roles.message;
     }
-    get_default_roles_if_empty(role_type) {
-        let roles = {
-            "bulk_edit_prices": ["Chief Sales Officer"],
-        }
-        return roles[role_type] || [];
+    async get_default_roles_if_empty(role_type) {
+        let roles = await frappe.call({
+            method: "libya_customizations.utils.get_default_roles_if_empty",
+            args: {
+                role_type: role_type
+            }
+        });
+        return roles.message;
     }
 }
 libya_customizations.utils = new Utils();

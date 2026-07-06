@@ -8,6 +8,7 @@
   "roles_tab",
   "bulk_edit_prices",
   "bypass_overdue_check",
+  "show_valuation_rate",
   "column_break_edgu",
   "reserve_against_future_receipts",
   "bypass_valuation_rate_check",
@@ -52,10 +53,17 @@
    "options": "Libya Customizations Settings Roles"
   },
   {
-   "description": "Roles that can submit sales order with item that has rate less than valuation rate. <br>\nDefault role will be [\"Chief Sales Officer\", \"Sales Supervisor\"] if empty",
+   "description": "Roles that can submit sales order with item that has rate less than price list rate. <br>\nDefault role will be [\"Chief Sales Officer\", \"Sales Supervisor\"] if empty",
    "fieldname": "bypass_price_list_check",
    "fieldtype": "Table MultiSelect",
    "label": "Bypass Price list Roles",
+   "options": "Libya Customizations Settings Roles"
+  },
+  {
+   "description": "Roles that can see valuation rate in item dialog <br>\nDefault role will be \"Chief Sales Officer\" if empty",
+   "fieldname": "show_valuation_rate",
+   "fieldtype": "Table MultiSelect",
+   "label": "Roles Can See Valuation Rate",
    "options": "Libya Customizations Settings Roles"
   }
  ],
@@ -63,7 +71,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2026-06-25 14:11:49.502293",
+ "modified": "2026-07-06 12:55:50.754131",
  "modified_by": "Administrator",
  "module": "Libya Customizations",
  "name": "Libya Customizations Settings",
