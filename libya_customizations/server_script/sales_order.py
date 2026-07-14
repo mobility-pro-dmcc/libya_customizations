@@ -57,14 +57,13 @@ def get_items_with_prices(doc):
 
 def after_submit_sales_order(doc, method):
     flag = False
-    x1=''
-    x2=''
     for row in doc.items:
         if not row.production_year:
-              pass
+            x1=''
+            x2=''
         else:
-              x1=f"""and production_year = '{row.production_year}' """
-              x2=f"""and purchase_receipt_item.production_year = '{row.production_year}' """
+            x1=f"""and production_year = '{row.production_year}' """
+            x2=f"""and purchase_receipt_item.production_year = '{row.production_year}' """
         balances = frappe.db.sql(f"""
             SELECT
                 IF(sales_future.future_qty_to_deliver > purchase_future.future_balance, stock_actual.actual_balance - (sales_actual.actual_qty_to_deliver + (sales_future.future_qty_to_deliver - purchase_future.future_balance)), stock_actual.actual_balance-sales_actual.actual_qty_to_deliver) AS actual_available_qty,

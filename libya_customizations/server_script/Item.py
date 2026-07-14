@@ -30,17 +30,4 @@ def after_update_item(doc, method):
                 'item_description': doc.description
             })
             existing_item_price.save(ignore_permissions=True)
-    _update_item_default_income_account(doc)
 
-def _update_item_default_income_account(doc):
-    company = frappe.db.get_default('Company')
-    sales_account = frappe.db.get_value('Company', company, 'default_income_account')
-
-    if doc.item_defaults:
-        doc.item_defaults[0].income_account = sales_account
-    else:
-        doc.append('item_defaults', {
-            'company': company,
-            'income_account': sales_account
-        })
-        doc.save()
